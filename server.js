@@ -3,7 +3,7 @@
 var express = require('express');
 var fs      = require('fs');
 var http    = require('http');
-var socket  = require('socket.io');
+var sock    = require('socket.io');
 
 
 /**
@@ -117,7 +117,7 @@ var SampleApp = function() {
         self.createRoutes();
         self.app = express();
         self.http = http.Server(self.app);
-		self.io = socket(self.http);
+		self.io = sock(self.http);
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
@@ -148,12 +148,18 @@ var SampleApp = function() {
             console.log('%s: Node server started on %s:%d ...',
                         Date(Date.now() ), self.ipaddress, self.port);
         });
+        
+        self.io.on('connection', function(socket){
+            console.log('a user connected');
+            socket.on('chat message', function(msg){
+                self.io.emit('chat message', msg);
+            });
+            socket.on('disconnect', function(){
+                console.log('user disconnected');
+            });
+         });
 		
-		self.io.on('connection', function(socket){
-  			console.log('a user connected');
-		});
     };
-	
 	
 
 };   /*  Sample Application.  */
