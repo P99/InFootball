@@ -5,6 +5,9 @@ var fs      = require('fs');
 var http    = require('http');
 var sock    = require('socket.io');
 
+var MongoClient = require('mongodb').MongoClient
+, assert = require('assert');
+
 
 /**
  *  Define the sample application.
@@ -164,7 +167,19 @@ var SampleApp = function() {
 
 };   /*  Sample Application.  */
 
-
+/**
+ * MongoDB
+ */
+// Connection URL
+var url = process.env.OPENSHIFT_MONGODB_DB_URL + '/infootball';
+console.log("Mongo db ULR: " + url);
+// Use connect method to connect to the Server
+MongoClient.connect(url, function(err, db) {
+                    assert.equal(null, err);
+                    console.log("Connected correctly to server");
+                    
+                    db.close();
+                    });
 
 /**
  *  main():  Main code.
