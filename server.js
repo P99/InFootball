@@ -63,8 +63,6 @@ if (app.get('env') === 'development') {
     });
 }
 
-//module.exports = app;
-//app.listen((process.env.OPENSHIFT_NODEJS_IP || 'localhost' ) + ':' + (process.env.OPENSHIFT_NODEJS_PORT || 3000));
 var webServer = http.Server(app);
 webServer.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080,
                  process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
@@ -73,4 +71,8 @@ webServer.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080,
                     Date(Date.now() ), (process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'), (process.env.OPENSHIFT_NODEJS_PORT || 8080));
                  }
 );
+
+var restAPI = require('./api/rest')(webServer);
+
+
 
