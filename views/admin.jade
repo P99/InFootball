@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title= 'Admin'
+    link(href='/jquery/jquery-ui.min.css', rel='stylesheet')
+
+  body
+    div#tabs
+      ul
+        li
+          a(href='#tabs-1') First
+        li
+          a(href='#tabs-2') Second
+        li
+          a(href='#tabs-3') Third
+      div#tabs-1 Content tab 1
+      div#tabs-2 Content tab 2
+      div#tabs-3 Content tab 3
+    script(src='/jquery/jquery.js')
+    script(src='/jquery/jquery-ui.min.js')
+    script
+        | $( "#tabs" ).tabs();
