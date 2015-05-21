@@ -1,0 +1,62 @@
+extends admin
+
+append style
+  | #dialog-link {
+  |   padding: .4em 1em .4em 20px;
+  |   text-decoration: none;
+  |   position: relative;
+  | }
+  | #dialog-link span.ui-icon {
+  |   margin: 0 5px 0 0;
+  |   position: absolute;
+  |   left: .2em;
+  |   top: 50%;
+  |   margin-top: -8px;
+  | }
+
+block template
+  p
+    a#dialog-link(href='#', class='ui-state-default ui-corner-all')
+      span(class='ui-icon ui-icon-newwin')
+      |  Create template
+  div#dialog(title='Template editor')
+    p Content here
+
+  script(src='/javascript/socket.io.js')
+  script
+    | var port = (location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
+    | var socket = io( port );
+    | socket.emit('template', 'message string');
+
+append jquery
+  | $( "#dialog-link" ).click(function( event ) {
+  |   $( "#dialog" ).dialog( "open" );
+  |   event.preventDefault();
+  | });
+  | $( "#dialog" ).dialog({
+  |   autoOpen: false,
+  |   width: 400,
+  |   buttons: [
+  |     {
+  |       text: "Ok",
+  |       click: function() {
+  |         $( this ).dialog( "close" );
+  |       }
+  |     },
+  |     {
+  |       text: "Cancel",
+  |       click: function() {
+  |         $( this ).dialog( "close" );
+  |       }
+  |     }
+  |   ]
+  | });
+  | // Hover states on the static widgets
+  | $( "#dialog-link, #icons li" ).hover(
+  |   function() {
+  |     $( this ).addClass( "ui-state-hover" );
+  |   },
+  |   function() {
+  |     $( this ).removeClass( "ui-state-hover" );
+  |   }
+  | );

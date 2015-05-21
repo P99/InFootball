@@ -4,8 +4,8 @@ module.exports = function(server) {
     var socketIO = io(server);
     socketIO.on('connection', function (socket) {
         console.log('user connected');
-        socket.on('chat message', function(msg){
-            socketIO.emit('chat message', msg);
+        socket.on('template', function(msg){
+            socketIO.emit('template', msg);
         });
         socket.on('disconnect', function() {
             console.log('user disconnected');
