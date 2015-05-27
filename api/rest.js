@@ -1,11 +1,18 @@
 var io = require('socket.io');
+var mongoose = require('mongoose');
+var Template = require('../models/template');
 
 module.exports = function(server) {
     var socketIO = io(server);
     socketIO.on('connection', function (socket) {
         console.log('user connected');
         socket.on('template', function(msg){
-            socketIO.emit('template', msg);
+            var _method = msg.method;
+            var _uri = msg.uri;
+            var _data = msg.data;
+            if ((_method === "GET") && (_uri === "templates/any?schema")) {
+              socketIO.emit('template', {method: _method, uri: _uri, data: {title: "...", teams:[], contexts: []}});
+            }
         });
         socket.on('disconnect', function() {
             console.log('user disconnected');

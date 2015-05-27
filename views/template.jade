@@ -13,23 +13,76 @@ append style
   |   top: 50%;
   |   margin-top: -8px;
   | }
+  | .editable {
+  |   margin: 0 0 0 5px;
+  |   display: inline-block;
+  |   width: 100px;
+  | }
+  | .caption {
+  |   text-transform:capitalize;
+  |   display: inline-block;
+  | }
 
 block template
   p
     a#dialog-link(href='#', class='ui-state-default ui-corner-all')
       span(class='ui-icon ui-icon-newwin')
       |  Create template
-  div#dialog(title='Template editor')
-    p Content here
+  div#dialog(title='New template...')
+    div#template-editor
 
   script(src='/javascript/socket.io.js')
   script
     | var port = (location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
     | var socket = io( port );
-    | socket.emit('template', 'message string');
+    | socket.on('template', function(msg) {
+    | console.log("Msg: " + msg.method + " " + msg.uri + " data: " + JSON.stringify(msg.data));
+    | });
 
 append jquery
   | $( "#dialog-link" ).click(function( event ) {
+  |   socket.emit('template', {method: "GET", uri: "templates/any?schema", data: {}});
+  |   socket.on('template', function(msg) {
+  |     console.log("Msg2: " + msg.method + " " + msg.uri + " data: " + JSON.stringify(msg.data));
+  |     for (key in msg.data) {
+  |       switch(typeof msg.data[key]) {
+  |       case "string":
+  |         $( "#template-editor" ).append("<div class='caption'>" + key + ":</div><div class='editable'>" + msg.data[key] + "</div>");
+  |         $( "#template-editor" ).find( ".editable" ).editable(  function(value) { return value },
+  |         {
+  |           type    : 'text',
+  |           submit  : 'OK'
+  |         });
+  |         break;
+  |       case "object":
+  |         if (msg.data[key] instanceof Array) {
+  |           // Todo: recurse array elements
+  |           var str = "<fieldset>";
+  |           str += "<legend class='caption'>" + key + "</legend>";
+  |           str += "<div id='teams' display='block'>";
+  |           str += "<span class='clickable ui-icon ui-icon-circle-plus' style='display: inline-block' />";
+  |           str += "</div>"
+  |           str += "</fieldset>";
+  |           $( "#template-editor" ).append(str);
+  |         }
+  |         break;
+  |       }
+  |     }
+  |     $( "#template-editor" ).find( ".clickable" ).click(function(event) {
+  |       console.log("click handler");
+  |       var str = "<div>";
+  |       str += "<span class='ui-icon ui-icon-triangle-1-e' style='display: inline-block' />";
+  |       str += "<div class='editable'>...</div>";
+  |       str += "</div>";
+  |       $(event.target).parent().prepend(str);
+  |       $(event.target).parent().find( ".editable" ).editable(  function(value) { return value },
+  |       {
+  |         type    : 'text',
+  |         submit  : 'OK',
+  |       });
+  |       event.preventDefault();
+  |     });
+  |   });
   |   $( "#dialog" ).dialog( "open" );
   |   event.preventDefault();
   | });
