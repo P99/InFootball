@@ -1,6 +1,5 @@
 var io = require('socket.io');
 var mongoose = require('mongoose');
-var Template = require('../models/template');
 
 module.exports = function(server) {
     var socketIO = io(server);

@@ -33,10 +33,9 @@ block template
 
   script(src='/javascript/socket.io.js')
   script
-    | var port = (location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
+    | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
     | var socket = io( port );
     | socket.on('template', function(msg) {
-    | console.log("Msg: " + msg.method + " " + msg.uri + " data: " + JSON.stringify(msg.data));
     | });
 
 append jquery
