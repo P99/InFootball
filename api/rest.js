@@ -10,7 +10,7 @@ module.exports = function(server) {
             var _uri = msg.uri;
             var _data = msg.data;
             if ((_method === "GET") && (_uri === "templates/any?schema")) {
-              socketIO.emit('template', {method: _method, uri: _uri, data: {title: "...", teams:[], contexts: []}});
+              socketIO.emit('template', {method: _method, uri: _uri, data: {title: "", teams:[], contexts: []}});
             }
         });
         socket.on('disconnect', function() {

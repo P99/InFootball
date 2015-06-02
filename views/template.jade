@@ -17,10 +17,25 @@ append style
   |   margin: 0 0 0 5px;
   |   display: inline-block;
   |   width: 100px;
+  |   border: 1px dashed grey;
   | }
   | .caption {
   |   text-transform:capitalize;
   |   display: inline-block;
+  | }
+  | ul {
+  |    list-style-type: none;
+  |    padding-left: 0px;
+  |    margin-left: 0px;
+  | }
+  | li {
+  |   list-style: none;
+  | }
+  | li:nth-child(odd) {
+  |   background-color: white;
+  | }
+  | li:nth-child(even) {
+  |   background-color: #F8F8F8;
   | }
 
 block template
@@ -50,7 +65,9 @@ append jquery
   |         $( "#template-editor" ).find( ".editable" ).editable(  function(value) { return value },
   |         {
   |           type    : 'text',
-  |           submit  : 'OK'
+  |           submit  : 'OK',
+  |           select  : true,
+  |           placeholder: '...'
   |         });
   |         break;
   |       case "object":
@@ -59,6 +76,7 @@ append jquery
   |           var str = "<fieldset>";
   |           str += "<legend class='caption'>" + key + "</legend>";
   |           str += "<div id='teams' display='block'>";
+  |           str += "<ul></ul>";
   |           str += "<span class='clickable ui-icon ui-icon-circle-plus' style='display: inline-block' />";
   |           str += "</div>"
   |           str += "</fieldset>";
@@ -69,15 +87,17 @@ append jquery
   |     }
   |     $( "#template-editor" ).find( ".clickable" ).click(function(event) {
   |       console.log("click handler");
-  |       var str = "<div>";
+  |       var str = "<li>";
   |       str += "<span class='ui-icon ui-icon-triangle-1-e' style='display: inline-block' />";
-  |       str += "<div class='editable'>...</div>";
-  |       str += "</div>";
-  |       $(event.target).parent().prepend(str);
+  |       str += "<div class='editable'></div>";
+  |       str += "</li>";
+  |       $(event.target).parent().find( "ul" ).append(str);
   |       $(event.target).parent().find( ".editable" ).editable(  function(value) { return value },
   |       {
   |         type    : 'text',
   |         submit  : 'OK',
+  |         select  : true,
+  |         placeholder: '...'
   |       });
   |       event.preventDefault();
   |     });
