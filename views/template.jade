@@ -56,8 +56,43 @@ block template
 append jquery
   | $( "#dialog-link" ).click(function( event ) {
   |   socket.emit('template', {method: "GET", uri: "templates/any?schema", data: {}});
+  |   $( "#dialog" ).dialog( "open" );
+  |   event.preventDefault();
+  | });
+  | $( "#dialog" ).dialog({
+  |   autoOpen: false,
+  |   width: 400,
+  |   buttons: [
+  |     {
+  |       text: "Ok",
+  |       click: function() {
+  |         var template = {};
+  |         // Todo: parse the dom and rebuild the template object
+  |         var template = {title: "Football", teams:[ "PSG", "OM" ], contexts: [ "Possede le ballon", "Ne possede pas le ballon"]};
+  |         socket.emit('template', {method: "PUT", uri: "templates/new", data: template});
+  |         $( this ).dialog( "close" );
+  |       }
+  |     },
+  |     {
+  |       text: "Cancel",
+  |       click: function() {
+  |         $( "#template-editor" ).empty();
+  |         $( this ).dialog( "close" );
+  |       }
+  |     }
+  |   ]
+  | });
+  | // Hover states on the static widgets
+  | $( "#dialog-link, #icons li" ).hover(
+  |   function() {
+  |     $( this ).addClass( "ui-state-hover" );
+  |   },
+  |   function() {
+  |     $( this ).removeClass( "ui-state-hover" );
+  |   }
+  | );
+  | // Populate the widget according to the schema
   |   socket.on('template', function(msg) {
-  |     console.log("Msg2: " + msg.method + " " + msg.uri + " data: " + JSON.stringify(msg.data));
   |     for (key in msg.data) {
   |       switch(typeof msg.data[key]) {
   |       case "string":
@@ -75,7 +110,7 @@ append jquery
   |           // Todo: recurse array elements
   |           var str = "<fieldset>";
   |           str += "<legend class='caption'>" + key + "</legend>";
-  |           str += "<div id='teams' display='block'>";
+  |           str += "<div display='block'>";
   |           str += "<ul></ul>";
   |           str += "<span class='clickable ui-icon ui-icon-circle-plus' style='display: inline-block' />";
   |           str += "</div>"
@@ -102,33 +137,3 @@ append jquery
   |       event.preventDefault();
   |     });
   |   });
-  |   $( "#dialog" ).dialog( "open" );
-  |   event.preventDefault();
-  | });
-  | $( "#dialog" ).dialog({
-  |   autoOpen: false,
-  |   width: 400,
-  |   buttons: [
-  |     {
-  |       text: "Ok",
-  |       click: function() {
-  |         $( this ).dialog( "close" );
-  |       }
-  |     },
-  |     {
-  |       text: "Cancel",
-  |       click: function() {
-  |         $( this ).dialog( "close" );
-  |       }
-  |     }
-  |   ]
-  | });
-  | // Hover states on the static widgets
-  | $( "#dialog-link, #icons li" ).hover(
-  |   function() {
-  |     $( this ).addClass( "ui-state-hover" );
-  |   },
-  |   function() {
-  |     $( this ).removeClass( "ui-state-hover" );
-  |   }
-  | );

@@ -1,13 +1,13 @@
-var express = require('express');
-var http    = require('http');
-var path = require('path');
-var favicon = require('static-favicon');
-var logger = require('morgan');
+var express      = require('express');
+var http         = require('http');
+var path         = require('path');
+var favicon      = require('static-favicon');
+var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var bodyParser   = require('body-parser');
+var mongoose     = require('mongoose');
+var dbConfig     = require('./db');
 
-var dbConfig = require('./db');
-var mongoose = require('mongoose');
 // Connect to DB
 mongoose.connect(dbConfig.url);
 
@@ -73,6 +73,3 @@ webServer.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080,
 );
 
 var restAPI = require('./api/rest')(webServer);
-
-
-
