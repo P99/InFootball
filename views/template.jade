@@ -46,11 +46,59 @@ block template
   div#dialog(title='New template...')
     div#template-editor
 
-  script(src='/javascript/socket.io.js')
+block users
+  div#users
+
   script
-    | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
-    | var socket = io( port );
-    | socket.on('template', function(msg) {
+    | $( "#users" ).jtable({
+    |   title: "Users",
+    |   actions: {
+    |           listAction: function(data, options){
+    |             return {
+    |                "Result": "OK",
+    |                "Records": data,
+    |                "TotalRecordCount": 2
+    |             };
+    |           },
+    |           createAction: function(){ console.log("createAction"); },
+    |           updateAction: function(){ console.log("updateAction"); },
+    |           deleteAction: function(){ console.log("deleteAction"); }
+    |       },
+    |   fields: {
+    |      _id: {
+    |          key: true,
+    |          create: false,
+    |          edit: false,
+    |          list: false
+    |      },
+    |      username: {
+    |          title: "Login",
+    |          width: "25%"
+    |      },
+    |      password: {
+    |          title: "Password",
+    |          type: 'password',
+    |          list: false
+    |      },
+    |      email: {
+    |          title: "Email",
+    |          width: "25%"
+    |      },
+    |      firstName: {
+    |          title: "First name",
+    |          width: "25%"
+    |      },
+    |      lastName: {
+    |          title: "Last name",
+    |          width: "25%"
+    |      }
+    |   }
+    | });
+    | socket.emit('admin', {method: "GET", uri: "users", data: {}});
+    | socket.on('admin', function(msg) {
+    |   if ((msg.method == "GET") && (msg.uri == "users")) {
+    |     $( "#users" ).jtable("load", msg.data);
+    |   }
     | });
 
 append jquery

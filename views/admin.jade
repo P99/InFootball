@@ -3,8 +3,20 @@ html
   head
     title= 'Admin'
     link(href='/jquery/jquery-ui.min.css', rel='stylesheet')
+    link(href='/jquery/jtable.2.4.0/jtable_jqueryui.css', rel='stylesheet')
     style
       block style
+
+    script(src='/jquery/jquery.js')
+    script(src='/jquery/jquery-ui.min.js')
+    script(src='/jquery/jquery.jeditable.js')
+    script(src='/jquery/jquery.jtable.js')
+    script(src='/javascript/socket.io.js')
+    script
+      | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
+      | var socket = io( port );
+      | socket.on('template', function(msg) {
+      | });
 
   body
     div#tabs
@@ -12,17 +24,15 @@ html
         li
           a(href='#tabs-1') Template
         li
-          a(href='#tabs-2') Second
+          a(href='#tabs-2') Users
         li
           a(href='#tabs-3') Third
       div#tabs-1
         block template
-          p Empty
-      div#tabs-2 Content tab 2
+      div#tabs-2
+        block users
       div#tabs-3 Content tab 3
-    script(src='/jquery/jquery.js')
-    script(src='/jquery/jquery-ui.min.js')
-    script(src='/jquery/jquery.jeditable.js')
+
     script
       block jquery
         | $( "#tabs" ).tabs();

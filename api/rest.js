@@ -1,6 +1,7 @@
 var io = require('socket.io');
 var mongoose = require('mongoose');
 var Template = require('../models/template');
+var User = require('../models/user');
 
 module.exports = function(server) {
     var socketIO = io(server);
@@ -38,6 +39,16 @@ module.exports = function(server) {
         });
         socket.on('disconnect', function() {
             console.log('user disconnected');
+        });
+        socket.on('admin', function(msg) {
+            var _method = msg.method;
+            var _uri = msg.uri;
+            var _data = msg.data;
+            if ((_method === "GET") && (_uri === "users")) {
+              User.find({}, function(err, users) {
+                socketIO.emit('admin', { method: _method, uri: _uri, data: users });
+              });
+            }
         });
     });
 }
