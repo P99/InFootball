@@ -48,6 +48,22 @@ module.exports = function(server) {
               User.find({}, function(err, users) {
                 socketIO.emit('admin', { method: _method, uri: _uri, data: users });
               });
+            } else if ((_method === "PUT") && (_uri === "users/new")) {
+               var user = new User(_data);
+               user.save(function(err,user){
+                 if (!err) {
+                    _uri = "users/" + user._id; 
+                    socketIO.emit('admin', { method: _method, uri: _uri, data: user });
+                 }
+               });
+            } else if ((_method === "DELETE") && (_uri.indexOf("users/") == 0)) {
+														console.log("Deleting user: " + JSON.stringify(_data));
+              User.findOneAndRemove(_data, function(err) {
+                if (!err) {
+                  // Dispatch update
+                  console.log("Deleted");
+                }
+              });
             }
         });
     });

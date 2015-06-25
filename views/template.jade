@@ -53,16 +53,36 @@ block users
     | $( "#users" ).jtable({
     |   title: "Users",
     |   actions: {
-    |           listAction: function(data, options){
+    |           listAction: function(users, options){
     |             return {
     |                "Result": "OK",
-    |                "Records": data,
+    |                "Records": users,
     |                "TotalRecordCount": 2
     |             };
     |           },
-    |           createAction: function(){ console.log("createAction"); },
-    |           updateAction: function(){ console.log("updateAction"); },
-    |           deleteAction: function(){ console.log("deleteAction"); }
+    |           createAction: function(postData){
+    |             console.log("create data:" + postData);
+    |             var user = {};
+    |             var pairs = postData.split("&");
+    |             pairs.forEach( function(key) {
+    |               var token = key.split("=");
+    |               user[token[0]] = token[1];
+    |             });
+    |             console.log("user: " + JSON.stringify(user));
+    |             socket.emit('admin', {method: "PUT", uri: "users/new", data: user});
+    |             return {
+    |               "Result": "OK",
+    |               "Record": obj
+    |             };
+    |           },
+    |           updateAction: function(data){ console.log("updateAction"); },
+    |           deleteAction: function(user){
+    |             console.log("deleteAction: " + JSON.stringify(user));
+    |             socket.emit('admin', {method: "DELETE", uri: "users/" + user._id, data: user});
+    |             return {
+    |               "Result": "OK"
+    |             };
+    |           }
     |       },
     |   fields: {
     |      _id: {
