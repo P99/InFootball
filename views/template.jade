@@ -52,12 +52,12 @@ block users
   script
     | $( "#users" ).jtable({
     |   title: "Users",
+    |   jqueryuiTheme: true,
     |   actions: {
-    |           listAction: function(users, options){
+    |           listAction: function(response, options){
     |             return {
     |                "Result": "OK",
-    |                "Records": users,
-    |                "TotalRecordCount": 2
+    |                "Records": response.users
     |             };
     |           },
     |           createAction: function(postData){
@@ -66,18 +66,28 @@ block users
     |             var pairs = postData.split("&");
     |             pairs.forEach( function(key) {
     |               var token = key.split("=");
-    |               user[token[0]] = token[1];
+    |               user[token[0]] = unescape(token[1]);
     |             });
-    |             console.log("user: " + JSON.stringify(user));
-    |             socket.emit('admin', {method: "PUT", uri: "users/new", data: user});
+    |             socket.emit('admin', {method: "CREATE", uri: "users/new", data: user});
     |             return {
     |               "Result": "OK",
-    |               "Record": obj
+    |               "Record": user
     |             };
     |           },
-    |           updateAction: function(data){ console.log("updateAction"); },
+    |           updateAction: function(postData){
+    |             var user = {};
+    |             var pairs = postData.split("&");
+    |             pairs.forEach( function(key) {
+    |               var token = key.split("=");
+    |               user[token[0]] = unescape(token[1]);
+    |             });
+    |             console.log("user: " + JSON.stringify(user));
+    |             socket.emit('admin', {method: "UPDATE", uri: "users/" + user._id, data: user});
+    |             return {
+    |               "Result": "OK"
+    |             };
+    |           },
     |           deleteAction: function(user){
-    |             console.log("deleteAction: " + JSON.stringify(user));
     |             socket.emit('admin', {method: "DELETE", uri: "users/" + user._id, data: user});
     |             return {
     |               "Result": "OK"
@@ -87,13 +97,11 @@ block users
     |   fields: {
     |      _id: {
     |          key: true,
-    |          create: false,
-    |          edit: false,
     |          list: false
     |      },
     |      username: {
     |          title: "Login",
-    |          width: "25%"
+    |          width: "20%"
     |      },
     |      password: {
     |          title: "Password",
@@ -102,24 +110,38 @@ block users
     |      },
     |      email: {
     |          title: "Email",
-    |          width: "25%"
+    |          width: "20%"
     |      },
     |      firstName: {
     |          title: "First name",
-    |          width: "25%"
+    |          width: "20%"
     |      },
     |      lastName: {
     |          title: "Last name",
-    |          width: "25%"
+    |          width: "20%"
+    |      },
+    |      type: {
+    |          title: "Type",
+    |          width: "20%",
+    |          options: ['Player','Leader','Admin']
     |      }
     |   }
     | });
-    | socket.emit('admin', {method: "GET", uri: "users", data: {}});
+    | var ref = $( "#users" );
+    | var response = {};
     | socket.on('admin', function(msg) {
-    |   if ((msg.method == "GET") && (msg.uri == "users")) {
-    |     $( "#users" ).jtable("load", msg.data);
+    |   console.log("received: " + JSON.stringify(msg));
+    |   if ((msg.method == "UPDATE") && (msg.uri == "users")) {
+    |     if (!response.users) {
+    |       response.users = msg.data;
+    |       ref.jtable("load", response);
+    |     } else {
+    |       response.users = msg.data;
+    |       ref.jtable("reload");
+    |     }
     |   }
     | });
+    | socket.emit('admin', {method: "UPDATE", uri: "users", data: {}}); // todo replace by join channel
 
 append jquery
   | $( "#dialog-link" ).click(function( event ) {

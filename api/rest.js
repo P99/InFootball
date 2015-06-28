@@ -2,6 +2,7 @@ var io = require('socket.io');
 var mongoose = require('mongoose');
 var Template = require('../models/template');
 var User = require('../models/user');
+var bCrypt = require('bcrypt-nodejs');
 
 module.exports = function(server) {
     var socketIO = io(server);
@@ -44,27 +45,57 @@ module.exports = function(server) {
             var _method = msg.method;
             var _uri = msg.uri;
             var _data = msg.data;
-            if ((_method === "GET") && (_uri === "users")) {
-              User.find({}, function(err, users) {
-                socketIO.emit('admin', { method: _method, uri: _uri, data: users });
-              });
-            } else if ((_method === "PUT") && (_uri === "users/new")) {
-               var user = new User(_data);
-               user.save(function(err,user){
+            if ((_method === "UPDATE") && (_uri === "users")) {
+              notifyAll();
+              // TODO: send update to this client only
+            } else if ((_method === "CREATE") && (_uri === "users/new")) {
+               var user = new User();
+               user.username = _data.username;
+               user.password = createHash(_data.password);
+               user.email = _data.email;
+               user.firstName = _data.firstName;
+               user.lastName = _data.lastName;
+               user.type = _data.type;
+               user.save(function(err, user) {
                  if (!err) {
-                    _uri = "users/" + user._id; 
-                    socketIO.emit('admin', { method: _method, uri: _uri, data: user });
+                    console.log("Created");
+                    notifyAll();
                  }
                });
+            } else if ((_method === "UPDATE") && (_uri.indexOf("users/") == 0)) {
+              console.log("Updating user: " + JSON.stringify(_data));
+              User.findOneAndUpdate({_id: _data._id}, _data, function(err) {
+                if (!err) {
+                  // Dispatch update
+                  console.log("Updated");
+                  notifyAll();
+                }
+              });
             } else if ((_method === "DELETE") && (_uri.indexOf("users/") == 0)) {
 														console.log("Deleting user: " + JSON.stringify(_data));
               User.findOneAndRemove(_data, function(err) {
                 if (!err) {
                   // Dispatch update
                   console.log("Deleted");
+                  notifyAll();
                 }
               });
             }
         });
     });
+
+
+    var notifyAll = function() {
+      User.find({}, function(err, users) {
+        if (!err) {
+          console.log("Notify All");
+          socketIO.emit('admin', { method: "UPDATE", uri: "users", data: users });
+        }
+      });
+    };
+
+    // Generates hash using bCrypt
+    var createHash = function(password){
+        return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+    };
 }

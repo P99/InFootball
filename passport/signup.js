@@ -32,6 +32,7 @@ module.exports = function(passport){
                         newUser.email = req.param('email');
                         newUser.firstName = req.param('firstName');
                         newUser.lastName = req.param('lastName');
+                        newUser.type = "Player";
 
                         // save the user
                         newUser.save(function(err) {
@@ -39,7 +40,15 @@ module.exports = function(passport){
                                 console.log('Error in Saving user: '+err);  
                                 throw err;  
                             }
-                            console.log('User Registration succesful');    
+                            console.log('User Registration succesful');
+                            // First user created is upgraded to "Admin"
+                            User.find({}, function(err, users) {
+                              if (users.length == 1) {
+                                users[0].type = "Admin";
+                                users[0].save();
+                                console.log("Upgraded to Admin");
+                              }
+                            });
                             return done(null, newUser);
                         });
                     }
