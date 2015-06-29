@@ -41,14 +41,14 @@ module.exports = function(server) {
         socket.on('disconnect', function() {
             console.log('user disconnected');
         });
-        socket.on('admin', function(msg) {
+     });
+     var adminNS = socketIO.of('/admin');
+     adminNS.on('connection', function (socket) {
+        socket.on('message', function(msg) {
             var _method = msg.method;
             var _uri = msg.uri;
             var _data = msg.data;
-            if ((_method === "UPDATE") && (_uri === "users")) {
-              notifyAll();
-              // TODO: send update to this client only
-            } else if ((_method === "CREATE") && (_uri === "users/new")) {
+            if ((_method === "CREATE") && (_uri === "users/new")) {
                var user = new User();
                user.username = _data.username;
                user.password = createHash(_data.password);
@@ -82,14 +82,25 @@ module.exports = function(server) {
               });
             }
         });
+        socket.on('join', function(msg) {
+          notifyOne(socket.id);
+        });
     });
 
+    var notifyOne = function(id) {
+      User.find({}, function(err, users) {
+        if (!err) {
+          console.log("Notify One: " + id );
+          adminNS.connected[id].emit('message', { method: "UPDATE", uri: "users", data: users });
+        }
+      });
+    }
 
     var notifyAll = function() {
       User.find({}, function(err, users) {
         if (!err) {
           console.log("Notify All");
-          socketIO.emit('admin', { method: "UPDATE", uri: "users", data: users });
+          adminNS.emit('message', { method: "UPDATE", uri: "users", data: users });
         }
       });
     };

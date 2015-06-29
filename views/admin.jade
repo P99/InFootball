@@ -13,8 +13,9 @@ html
     script(src='/jquery/jquery.jtable.js')
     script(src='/javascript/socket.io.js')
     script
-      | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? ':8000' : '';
-      | var socket = io( port );
+      | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8000 : 8080;
+      | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
+      | var socket = io( document.location.hostname + ':' + port );
       | socket.on('template', function(msg) {
       | });
 

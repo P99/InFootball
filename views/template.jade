@@ -50,6 +50,7 @@ block users
   div#users
 
   script
+    | var admin = io( document.location.hostname + ':' + port + '/admin' );
     | $( "#users" ).jtable({
     |   title: "Users",
     |   jqueryuiTheme: true,
@@ -68,7 +69,7 @@ block users
     |               var token = key.split("=");
     |               user[token[0]] = unescape(token[1]);
     |             });
-    |             socket.emit('admin', {method: "CREATE", uri: "users/new", data: user});
+    |             admin.emit('message', {method: "CREATE", uri: "users/new", data: user});
     |             return {
     |               "Result": "OK",
     |               "Record": user
@@ -82,13 +83,13 @@ block users
     |               user[token[0]] = unescape(token[1]);
     |             });
     |             console.log("user: " + JSON.stringify(user));
-    |             socket.emit('admin', {method: "UPDATE", uri: "users/" + user._id, data: user});
+    |             admin.emit('message', {method: "UPDATE", uri: "users/" + user._id, data: user});
     |             return {
     |               "Result": "OK"
     |             };
     |           },
     |           deleteAction: function(user){
-    |             socket.emit('admin', {method: "DELETE", uri: "users/" + user._id, data: user});
+    |             admin.emit('message', {method: "DELETE", uri: "users/" + user._id, data: user});
     |             return {
     |               "Result": "OK"
     |             };
@@ -129,7 +130,7 @@ block users
     | });
     | var ref = $( "#users" );
     | var response = {};
-    | socket.on('admin', function(msg) {
+    | admin.on('message', function(msg) {
     |   console.log("received: " + JSON.stringify(msg));
     |   if ((msg.method == "UPDATE") && (msg.uri == "users")) {
     |     if (!response.users) {
@@ -141,7 +142,7 @@ block users
     |     }
     |   }
     | });
-    | socket.emit('admin', {method: "UPDATE", uri: "users", data: {}}); // todo replace by join channel
+    | admin.emit('join');
 
 append jquery
   | $( "#dialog-link" ).click(function( event ) {
