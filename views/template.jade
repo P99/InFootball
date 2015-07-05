@@ -1,4 +1,4 @@
-div(style={width: "300px"})
+div(style={width: "400px"})
   div#templates
 
 script
@@ -15,23 +15,38 @@ script
   |     },
   |     createAction: function(postData) {
   |       var template = extract(postData);
-  |       socket.emit('message', {method: "CREATE", uri: "templates/new", data: template});
+  |       socket.emit('message', { method: "CREATE", uri: "templates/new", data: template });
   |       return {
-  |               "Result": "OK",
-  |               "Record": template
-  |             }; 
+  |         "Result": "OK",
+  |         "Record": template
+  |       }; 
   |     },
-  |     updateAction: "",
-  |     deleteAction: ""
+  |     updateAction: function(postData) {
+  |       var template = extract(postData);
+  |       socket.emit('message', { method: "UPDATE", uri: "templates/" + template._id, data: template });
+  |       return {
+  |         "Result": "OK"
+  |       }
+  |     },
+  |     deleteAction: function(template){
+  |       socket.emit('message', { method: "DELETE", uri: "templates/" + template._id, data: template });
+  |       return {
+  |         "Result": "OK"
+  |       };
+  |     }
   |   },
   |   fields: {
+  |     _id: {
+  |       key: true,
+  |       list: false
+  |     },
+  |     title: {
+  |       title: "Affiche"
+  |     },
   |     date: {
   |       type: "date",
   |       title: "Date",
   |       displayFormat: "yy-mm-dd"
-  |     },
-  |     title: {
-  |       title: "Affiche"
   |     }
   |   }
   | });
