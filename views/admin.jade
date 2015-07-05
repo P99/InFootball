@@ -17,7 +17,11 @@ html
       | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
 
   body
-    div#tabs
+    div#header(class="ui-widget ui-widget-content", style={padding: "6px", float: "right"})
+      div(style={display: "inline-block"}) #{user.firstName} #{user.lastName}
+      a(href='/signout')
+        span(class="ui-icon ui-icon-power", style={ display: "inline-block"})
+    div#tabs(style={top: "2em"})
       ul
         li
           a(href='#tabs-1') Template
@@ -31,6 +35,7 @@ html
       div#tabs-1
         include template.jade
       div#tabs-2
+        include metadata.jade
 
       if (user.type == "Admin")
         div#tabs-3

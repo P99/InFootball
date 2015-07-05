@@ -9,7 +9,7 @@ var Schema = mongoose.Schema({
 });
 
 Schema.statics.namespace = function() {
-  return "template";
+  return "operator";
 }
 
 module.exports = mongoose.model('Template', Schema);

@@ -57,11 +57,6 @@ module.exports = function(server) {
           }
         }); // End handling 'message' event
 
-        socket.on('join', function(msg) {
-          console.log("[" + name + "] user joined");
-          notifyOne();
-        });
-
         socket.on('disconnect', function() {
           console.log("[" + name + "] user disconnected");
         });
@@ -71,7 +66,7 @@ module.exports = function(server) {
           model.find({}, function(err, records) {
             if (!err) {
               //handler.connected[id].emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
-              socket.emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
+              socket.emit('message', { method: "UPDATE", uri: name, data: records });
             }
           });
         }
@@ -79,7 +74,7 @@ module.exports = function(server) {
         var notifyAll = function() {
           model.find({}, function(err, records) {
             if (!err) {
-              handler.emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
+              handler.emit('message', { method: "UPDATE", uri: name, data: records });
             }
           });
         };
@@ -89,6 +84,8 @@ module.exports = function(server) {
           return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
         };
 
+        // socket just joined
+        notifyOne();
       }); // End namespace connection
 
     } // End createNode function
