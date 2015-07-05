@@ -15,9 +15,6 @@ html
     script
       | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8000 : 8080;
       | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
-      | var socket = io( document.location.hostname + ':' + port );
-      | socket.on('template', function(msg) {
-      | });
 
   body
     div#tabs
@@ -25,14 +22,19 @@ html
         li
           a(href='#tabs-1') Template
         li
-          a(href='#tabs-2') Users
-        li
-          a(href='#tabs-3') Third
+          a(href='#tabs-2') Metadata
+
+          if (user.type == "Admin")
+            li
+              a(href='#tabs-3') Users
+
       div#tabs-1
-        block template
+        include template.jade
       div#tabs-2
-        block users
-      div#tabs-3 Content tab 3
+
+      if (user.type == "Admin")
+        div#tabs-3
+          include users.jade
 
     script
       block jquery

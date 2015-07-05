@@ -1,0 +1,91 @@
+div#users
+
+script
+  | var admin = io( document.location.hostname + ':' + port + '/admin' );
+  | $( "#users" ).jtable({
+  |   title: "Users",
+  |   jqueryuiTheme: true,
+  |   actions: {
+  |           listAction: function(response, options){
+  |             return {
+  |                "Result": "OK",
+  |                "Records": response.users
+  |             };
+  |           },
+  |           createAction: function(postData){
+  |             console.log("create data:" + postData);
+  |             var user = {};
+  |             var pairs = postData.split("&");
+  |             pairs.forEach( function(key) {
+  |               var token = key.split("=");
+  |               user[token[0]] = unescape(token[1]);
+  |             });
+  |             admin.emit('message', {method: "CREATE", uri: "users/new", data: user});
+  |             return {
+  |               "Result": "OK",
+  |               "Record": user
+  |             };
+  |           },
+  |           updateAction: function(postData){
+  |             var user = {};
+  |             var pairs = postData.split("&");
+  |             pairs.forEach( function(key) {
+  |               var token = key.split("=");
+  |               user[token[0]] = unescape(token[1]);
+  |             });
+  |             console.log("user: " + JSON.stringify(user));
+  |             admin.emit('message', {method: "UPDATE", uri: "users/" + user._id, data: user});
+  |             return {
+  |               "Result": "OK"
+  |             };
+  |           },
+  |           deleteAction: function(user){
+  |             admin.emit('message', {method: "DELETE", uri: "users/" + user._id, data: user});
+  |             return {
+  |               "Result": "OK"
+  |             };
+  |           }
+  |       },
+  |   fields: {
+  |      _id: {
+  |          key: true,
+  |          list: false
+  |      },
+  |      username: {
+  |          title: "Login"
+  |      },
+  |      password: {
+  |          title: "Password",
+  |          type: 'password',
+  |          list: false
+  |      },
+  |      email: {
+  |          title: "Email"
+  |      },
+  |      firstName: {
+  |          title: "First name"
+  |      },
+  |      lastName: {
+  |          title: "Last name"
+  |      },
+  |      type: {
+  |          title: "Type",
+  |          options: ['Player','Operator','Admin']
+  |      }
+  |   }
+  | });
+  | var ref = $( "#users" );
+  | var response = {};
+  | admin.on('message', function(msg) {
+  |   console.log("received: " + JSON.stringify(msg));
+  |   if ((msg.method == "UPDATE") && (msg.uri == "users")) {
+  |     if (!response.users) {
+  |       response.users = msg.data;
+  |       ref.jtable("load", response);
+  |     } else {
+  |       response.users = msg.data;
+  |       ref.jtable("reload");
+  |     }
+  |   }
+  | });
+  | admin.emit('join');

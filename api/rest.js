@@ -6,60 +6,73 @@ var bCrypt = require('bcrypt-nodejs');
 
 module.exports = function(server) {
     var socketIO = io(server);
-    socketIO.on('connection', function (socket) {
-        console.log('user connected');
-        socket.on('template', function(msg){
+    var templateSocket = socketIO.of('/template');
+    templateSocket.on('connection', function (socket) {
+        socket.on('message', function(msg){
             var _method = msg.method;
             var _uri = msg.uri;
             var _data = msg.data;
-            if ((_method === "GET") && (_uri === "templates/any?schema")) {
-              socketIO.emit('template', {method: _method, uri: _uri, data: {title: "", teams:[], contexts: []}});
-            } else if ((_method === "PUT") && (_uri === "templates/new")) {
+            if ((_method === "CREATE") && (_uri === "templates/new")) {
               console.log("Receiving new template: " + JSON.stringify(_data));
-              Template.findOne({ 'title' :  _data.title }, function(err, template) {
-                if (err) {
-																		console.log("Error creating new template");
-                } else if (template) {
-                  console.log("Template: " + _data.title + " already exists");
-                } else {
                   console.log("Creating new template");
-                  var newTemplate = new Template();
-                  newTemplate.title = _data.title;
-                  newTemplate.teams = _data.teams;
-                  newTemplate.contexts = _data.contexts;
-                  newTemplate.save(function(err) {
+                  var template = new Template();
+                  template.title = _data.title;
+                  template.date = _data.date;
+                  template.teams = []; // Todo
+                  template.contexts = []; // Todo
+                  template.author = ""; // Todo
+                  template.save(function(err) {
                     if (!err) {
                       console.log("New template saved");
                     } else {
                       console.log("Error creating template: " + err);
                     }
                   });
-                }
-              });
             }
+        });
+        socket.on('join', function(msg) {
+          notifyOne(socket.id);
         });
         socket.on('disconnect', function() {
             console.log('user disconnected');
         });
+
+        // Utility
+        var notifyOne = function(id) {
+          Template.find({}, function(err, templates) {
+            if (!err) {
+              console.log("Notify One: " + id );
+              templateSocket.connected[id].emit('message', { method: "UPDATE", uri: "templates", data: templates });
+            }
+          });
+        }
      });
-     var adminNS = socketIO.of('/admin');
-     adminNS.on('connection', function (socket) {
+     var adminSocket = socketIO.of('/admin');
+     adminSocket.on('connection', function (socket) {
         socket.on('message', function(msg) {
             var _method = msg.method;
             var _uri = msg.uri;
             var _data = msg.data;
             if ((_method === "CREATE") && (_uri === "users/new")) {
-               var user = new User();
-               user.username = _data.username;
-               user.password = createHash(_data.password);
-               user.email = _data.email;
-               user.firstName = _data.firstName;
-               user.lastName = _data.lastName;
-               user.type = _data.type;
-               user.save(function(err, user) {
-                 if (!err) {
-                    console.log("Created");
-                    notifyAll();
+               User.findOne({ 'username' :  _data.username }, function(err, user) {
+                 if (err) {
+																	 	console.log("Error creating new user");
+                 } else if (user) {
+                   console.log("User: " + _data.username + " already exists");
+                 } else {
+                   var user = new User();
+                   user.username = _data.username;
+                   user.password = createHash(_data.password);
+                   user.email = _data.email;
+                   user.firstName = _data.firstName;
+                   user.lastName = _data.lastName;
+                   user.type = _data.type;
+                   user.save(function(err, user) {
+                     if (!err) {
+                       console.log("Created");
+                       notifyAll();
+                     }
+                   });
                  }
                });
             } else if ((_method === "UPDATE") && (_uri.indexOf("users/") == 0)) {
@@ -85,28 +98,29 @@ module.exports = function(server) {
         socket.on('join', function(msg) {
           notifyOne(socket.id);
         });
+
+        // Utility
+        var notifyOne = function(id) {
+          User.find({}, function(err, users) {
+            if (!err) {
+              console.log("Notify One: " + id );
+              adminSocket.connected[id].emit('message', { method: "UPDATE", uri: "users", data: users });
+            }
+          });
+        }
+
+        var notifyAll = function() {
+          User.find({}, function(err, users) {
+            if (!err) {
+              console.log("Notify All");
+              adminSocket.emit('message', { method: "UPDATE", uri: "users", data: users });
+            }
+          });
+        };
+
+        // Generates hash using bCrypt
+        var createHash = function(password){
+          return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+        };
     });
-
-    var notifyOne = function(id) {
-      User.find({}, function(err, users) {
-        if (!err) {
-          console.log("Notify One: " + id );
-          adminNS.connected[id].emit('message', { method: "UPDATE", uri: "users", data: users });
-        }
-      });
-    }
-
-    var notifyAll = function() {
-      User.find({}, function(err, users) {
-        if (!err) {
-          console.log("Notify All");
-          adminNS.emit('message', { method: "UPDATE", uri: "users", data: users });
-        }
-      });
-    };
-
-    // Generates hash using bCrypt
-    var createHash = function(password){
-        return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
-    };
 }

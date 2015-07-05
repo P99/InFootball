@@ -1,230 +1,72 @@
-extends admin
+div(style={width: "300px"})
+  div#templates
 
-append style
-  | #dialog-link {
-  |   padding: .4em 1em .4em 20px;
-  |   text-decoration: none;
-  |   position: relative;
-  | }
-  | #dialog-link span.ui-icon {
-  |   margin: 0 5px 0 0;
-  |   position: absolute;
-  |   left: .2em;
-  |   top: 50%;
-  |   margin-top: -8px;
-  | }
-  | .editable {
-  |   margin: 0 0 0 5px;
-  |   display: inline-block;
-  |   width: 100px;
-  |   border: 1px dashed grey;
-  | }
-  | .caption {
-  |   text-transform:capitalize;
-  |   display: inline-block;
-  | }
-  | ul {
-  |    list-style-type: none;
-  |    padding-left: 0px;
-  |    margin-left: 0px;
-  | }
-  | li {
-  |   list-style: none;
-  | }
-  | li:nth-child(odd) {
-  |   background-color: white;
-  | }
-  | li:nth-child(even) {
-  |   background-color: #F8F8F8;
-  | }
-
-block template
-  p
-    a#dialog-link(href='#', class='ui-state-default ui-corner-all')
-      span(class='ui-icon ui-icon-newwin')
-      |  Create template
-  div#dialog(title='New template...')
-    div#template-editor
-
-block users
-  div#users
-
-  script
-    | var admin = io( document.location.hostname + ':' + port + '/admin' );
-    | $( "#users" ).jtable({
-    |   title: "Users",
-    |   jqueryuiTheme: true,
-    |   actions: {
-    |           listAction: function(response, options){
-    |             return {
-    |                "Result": "OK",
-    |                "Records": response.users
-    |             };
-    |           },
-    |           createAction: function(postData){
-    |             console.log("create data:" + postData);
-    |             var user = {};
-    |             var pairs = postData.split("&");
-    |             pairs.forEach( function(key) {
-    |               var token = key.split("=");
-    |               user[token[0]] = unescape(token[1]);
-    |             });
-    |             admin.emit('message', {method: "CREATE", uri: "users/new", data: user});
-    |             return {
-    |               "Result": "OK",
-    |               "Record": user
-    |             };
-    |           },
-    |           updateAction: function(postData){
-    |             var user = {};
-    |             var pairs = postData.split("&");
-    |             pairs.forEach( function(key) {
-    |               var token = key.split("=");
-    |               user[token[0]] = unescape(token[1]);
-    |             });
-    |             console.log("user: " + JSON.stringify(user));
-    |             admin.emit('message', {method: "UPDATE", uri: "users/" + user._id, data: user});
-    |             return {
-    |               "Result": "OK"
-    |             };
-    |           },
-    |           deleteAction: function(user){
-    |             admin.emit('message', {method: "DELETE", uri: "users/" + user._id, data: user});
-    |             return {
-    |               "Result": "OK"
-    |             };
-    |           }
-    |       },
-    |   fields: {
-    |      _id: {
-    |          key: true,
-    |          list: false
-    |      },
-    |      username: {
-    |          title: "Login",
-    |          width: "20%"
-    |      },
-    |      password: {
-    |          title: "Password",
-    |          type: 'password',
-    |          list: false
-    |      },
-    |      email: {
-    |          title: "Email",
-    |          width: "20%"
-    |      },
-    |      firstName: {
-    |          title: "First name",
-    |          width: "20%"
-    |      },
-    |      lastName: {
-    |          title: "Last name",
-    |          width: "20%"
-    |      },
-    |      type: {
-    |          title: "Type",
-    |          width: "20%",
-    |          options: ['Player','Leader','Admin']
-    |      }
-    |   }
-    | });
-    | var ref = $( "#users" );
-    | var response = {};
-    | admin.on('message', function(msg) {
-    |   console.log("received: " + JSON.stringify(msg));
-    |   if ((msg.method == "UPDATE") && (msg.uri == "users")) {
-    |     if (!response.users) {
-    |       response.users = msg.data;
-    |       ref.jtable("load", response);
-    |     } else {
-    |       response.users = msg.data;
-    |       ref.jtable("reload");
-    |     }
-    |   }
-    | });
-    | admin.emit('join');
-
-append jquery
-  | $( "#dialog-link" ).click(function( event ) {
-  |   socket.emit('template', {method: "GET", uri: "templates/any?schema", data: {}});
-  |   $( "#dialog" ).dialog( "open" );
-  |   event.preventDefault();
-  | });
-  | $( "#dialog" ).dialog({
-  |   autoOpen: false,
-  |   width: 400,
-  |   buttons: [
-  |     {
-  |       text: "Ok",
-  |       click: function() {
-  |         var template = {};
-  |         // Todo: parse the dom and rebuild the template object
-  |         var template = {title: "Football", teams:[ "PSG", "OM" ], contexts: [ "Possede le ballon", "Ne possede pas le ballon"]};
-  |         socket.emit('template', {method: "PUT", uri: "templates/new", data: template});
-  |         $( this ).dialog( "close" );
-  |       }
+script
+  | var socket = io( document.location.hostname + ':' + port + '/template' );
+  | $( "#templates" ).jtable({
+  |   title: "Games",
+  |   jqueryuiTheme: true,
+  |   actions: {
+  |     listAction: function(response, options){
+  |       return {
+  |         "Result": "OK",
+  |         "Records": response.template
+  |       };
   |     },
-  |     {
-  |       text: "Cancel",
-  |       click: function() {
-  |         $( "#template-editor" ).empty();
-  |         $( this ).dialog( "close" );
-  |       }
-  |     }
-  |   ]
-  | });
-  | // Hover states on the static widgets
-  | $( "#dialog-link, #icons li" ).hover(
-  |   function() {
-  |     $( this ).addClass( "ui-state-hover" );
+  |     createAction: function(postData) {
+  |       var template = extract(postData);
+  |       socket.emit('message', {method: "CREATE", uri: "templates/new", data: template});
+  |       return {
+  |               "Result": "OK",
+  |               "Record": template
+  |             }; 
+  |     },
+  |     updateAction: "",
+  |     deleteAction: ""
   |   },
-  |   function() {
-  |     $( this ).removeClass( "ui-state-hover" );
-  |   }
-  | );
-  | // Populate the widget according to the schema
-  |   socket.on('template', function(msg) {
-  |     for (key in msg.data) {
-  |       switch(typeof msg.data[key]) {
-  |       case "string":
-  |         $( "#template-editor" ).append("<div class='caption'>" + key + ":</div><div class='editable'>" + msg.data[key] + "</div>");
-  |         $( "#template-editor" ).find( ".editable" ).editable(  function(value) { return value },
-  |         {
-  |           type    : 'text',
-  |           submit  : 'OK',
-  |           select  : true,
-  |           placeholder: '...'
-  |         });
-  |         break;
-  |       case "object":
-  |         if (msg.data[key] instanceof Array) {
-  |           // Todo: recurse array elements
-  |           var str = "<fieldset>";
-  |           str += "<legend class='caption'>" + key + "</legend>";
-  |           str += "<div display='block'>";
-  |           str += "<ul></ul>";
-  |           str += "<span class='clickable ui-icon ui-icon-circle-plus' style='display: inline-block' />";
-  |           str += "</div>"
-  |           str += "</fieldset>";
-  |           $( "#template-editor" ).append(str);
-  |         }
-  |         break;
-  |       }
+  |   fields: {
+  |     date: {
+  |       type: "date",
+  |       title: "Date",
+  |       displayFormat: "yy-mm-dd"
+  |     },
+  |     title: {
+  |       title: "Affiche"
   |     }
-  |     $( "#template-editor" ).find( ".clickable" ).click(function(event) {
-  |       console.log("click handler");
-  |       var str = "<li>";
-  |       str += "<span class='ui-icon ui-icon-triangle-1-e' style='display: inline-block' />";
-  |       str += "<div class='editable'></div>";
-  |       str += "</li>";
-  |       $(event.target).parent().find( "ul" ).append(str);
-  |       $(event.target).parent().find( ".editable" ).editable(  function(value) { return value },
-  |       {
-  |         type    : 'text',
-  |         submit  : 'OK',
-  |         select  : true,
-  |         placeholder: '...'
-  |       });
-  |       event.preventDefault();
-  |     });
+  |   }
+  | });
+  | var ref2 = $( "#templates" );
+  | var response2 = {};
+  | socket.on('message', function(msg) {
+  |   console.log("received: " + JSON.stringify(msg));
+  |   if ((msg.method == "UPDATE") && (msg.uri == "templates")) {
+  |     fixDate(msg.data);
+  |     if (!response2.template) {
+  |       response2.template = msg.data;
+  |       ref2.jtable("load", response2);
+  |     } else {
+  |       response2.template = msg.data;
+  |       ref2.jtable("reload");
+  |     }
+  |   }
+  | });
+  | socket.emit('join');
+  | // Utility
+  | function extract(uri) {
+  |   var data = {}, token;
+  |   var pairs = uri.split("&");
+  |   pairs.forEach( function(key) {
+  |     token = key.split("=");
+  |     data[token[0]] = unescape(token[1]);
   |   });
+  |   return data;
+  | }
+  | // Fixing date
+  | function fixDate(records) {
+  |   records.forEach(function(record) {
+  |     if (record.date) {
+  |       console.log("Fixing date > ");
+  |       record.date = "/Date(" + Date.parse(record.date) + ")/";
+  |     }
+  |   });
+  | }
