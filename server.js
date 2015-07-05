@@ -72,4 +72,8 @@ webServer.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080,
                  }
 );
 
+// Mongoose models need to be created first
+// so the rest api can export them
+var User = require('./models/user');
+var Template = require('./models/template');
 var restAPI = require('./api/rest')(webServer);

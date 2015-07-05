@@ -1,146 +1,85 @@
 var io = require('socket.io');
 var mongoose = require('mongoose');
-var Template = require('../models/template');
-var User = require('../models/user');
 var bCrypt = require('bcrypt-nodejs');
 
 module.exports = function(server) {
     var socketIO = io(server);
-    var templateSocket = socketIO.of('/template');
-    templateSocket.on('connection', function (socket) {
+    for (var name in mongoose.models) {
+      console.log("Mongosse models: " + name);
+      var resource = name.toLowerCase();
+      var model = mongoose.models[name];
+      createNode(resource, model);
+    } // End for each Mongoose model
+
+    function createNode(name, model) {
+      var handler = socketIO.of(model.namespace());
+      handler.on('connection', function (socket) {
         socket.on('message', function(msg) {
-            var _method = msg.method;
-            var _uri = msg.uri;
-            var _data = msg.data;
-            if ((_method === "CREATE") && (_uri === "templates/new")) {
-              console.log("Receiving new template: " + JSON.stringify(_data));
-                  console.log("Creating new template");
-                  var template = new Template();
-                  template.title = _data.title;
-                  template.date = _data.date;
-                  template.teams = []; // Todo
-                  template.contexts = []; // Todo
-                  template.author = ""; // Todo
-                  template.save(function(err) {
-                    if (!err) {
-                      console.log("New template saved");
-                    } else {
-                      console.log("Error creating template: " + err);
-                    }
-                  });
-            } else if ((_method === "UPDATE") && (_uri.indexOf("templates/") == 0)) {
-              console.log("Updating template: " + JSON.stringify(_data));
-              Template.findOneAndUpdate({_id: _data._id}, _data, function(err) {
-                if (!err) {
-                  // Dispatch update
-                  console.log("Updated");
-                  notifyAll();
-                }
-              });
-            } else if ((_method === "DELETE") && (_uri.indexOf("templates/") == 0)) {
-														console.log("Deleting template: " + JSON.stringify(_data));
-              Template.findOneAndRemove(_data, function(err) {
-                if (!err) {
-                  // Dispatch update
-                  console.log("Deleted");
-                  notifyAll();
-                }
-              });
+          console.log("[" + name + "] " + msg.method + " " + msg.uri);
+          switch (msg.method) {
+          case "CREATE":
+            console.log("New " + name + ": " + JSON.stringify(msg.data));
+            var object = new model();
+            for (var key in msg.data) {
+              if (key === "password") {
+                object[key] = createHash(msg.data[key]);
+              } else {
+                object[key] = msg.data[key];
+              }
             }
-        });
+            object.save(function(err) {
+              console.log(msg.method + " " + name + ": " + (err?err:"Ok"));
+              if (!err) {
+                notifyAll();
+              }
+            });
+            break;
+          case "READ":
+            // Todo
+            break;
+          case "UPDATE":
+            model.findOneAndUpdate({_id: msg.data._id}, msg.data, function(err) {
+              if (!err) {
+                notifyAll();
+              }
+            });
+            break;
+          case "DELETE":
+            model.findOneAndRemove(msg.data, function(err) {
+              if (!err) {
+                notifyAll();
+              }
+            });
+            break;
+          default:
+            console.log("Unkown method: " + msg.method);
+            break;
+          }
+        }); // End handling 'message' event
+
         socket.on('join', function(msg) {
-          notifyOne(socket.id);
+          console.log("[" + name + "] user joined");
+          notifyOne();
         });
+
         socket.on('disconnect', function() {
-            console.log('user disconnected');
+          console.log("[" + name + "] user disconnected");
         });
 
         // Utility
-        var notifyOne = function(id) {
-          Template.find({}, function(err, templates) {
+        var notifyOne = function() {
+          model.find({}, function(err, records) {
             if (!err) {
-              console.log("Notify One: " + id );
-              templateSocket.connected[id].emit('message', { method: "UPDATE", uri: "templates", data: templates });
+              //handler.connected[id].emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
+              socket.emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
             }
           });
         }
 
         var notifyAll = function() {
-          Template.find({}, function(err, templates) {
+          model.find({}, function(err, records) {
             if (!err) {
-              console.log("Notify All");
-              templateSocket.emit('message', { method: "UPDATE", uri: "templates", data: templates });
-            }
-          });
-        };
-     });
-     var adminSocket = socketIO.of('/admin');
-     adminSocket.on('connection', function (socket) {
-        socket.on('message', function(msg) {
-            var _method = msg.method;
-            var _uri = msg.uri;
-            var _data = msg.data;
-            if ((_method === "CREATE") && (_uri === "users/new")) {
-               User.findOne({ 'username' :  _data.username }, function(err, user) {
-                 if (err) {
-																	 	console.log("Error creating new user");
-                 } else if (user) {
-                   console.log("User: " + _data.username + " already exists");
-                 } else {
-                   var user = new User();
-                   user.username = _data.username;
-                   user.password = createHash(_data.password);
-                   user.email = _data.email;
-                   user.firstName = _data.firstName;
-                   user.lastName = _data.lastName;
-                   user.type = _data.type;
-                   user.save(function(err, user) {
-                     if (!err) {
-                       console.log("Created");
-                       notifyAll();
-                     }
-                   });
-                 }
-               });
-            } else if ((_method === "UPDATE") && (_uri.indexOf("users/") == 0)) {
-              console.log("Updating user: " + JSON.stringify(_data));
-              User.findOneAndUpdate({_id: _data._id}, _data, function(err) {
-                if (!err) {
-                  // Dispatch update
-                  console.log("Updated");
-                  notifyAll();
-                }
-              });
-            } else if ((_method === "DELETE") && (_uri.indexOf("users/") == 0)) {
-														console.log("Deleting user: " + JSON.stringify(_data));
-              User.findOneAndRemove(_data, function(err) {
-                if (!err) {
-                  // Dispatch update
-                  console.log("Deleted");
-                  notifyAll();
-                }
-              });
-            }
-        });
-        socket.on('join', function(msg) {
-          notifyOne(socket.id);
-        });
-
-        // Utility
-        var notifyOne = function(id) {
-          User.find({}, function(err, users) {
-            if (!err) {
-              console.log("Notify One: " + id );
-              adminSocket.connected[id].emit('message', { method: "UPDATE", uri: "users", data: users });
-            }
-          });
-        }
-
-        var notifyAll = function() {
-          User.find({}, function(err, users) {
-            if (!err) {
-              console.log("Notify All");
-              adminSocket.emit('message', { method: "UPDATE", uri: "users", data: users });
+              handler.emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
             }
           });
         };
@@ -149,5 +88,8 @@ module.exports = function(server) {
         var createHash = function(password){
           return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
         };
-    });
+
+      }); // End namespace connection
+
+    } // End createNode function
 }
