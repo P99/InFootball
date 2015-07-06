@@ -17,11 +17,47 @@ html
       | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
 
   body
-    div#header(class="ui-widget ui-widget-content", style={padding: "6px", float: "right"})
-      div(style={display: "inline-block"}) #{user.firstName} #{user.lastName}
-      a(href='/signout')
-        span(class="ui-icon ui-icon-power", style={ display: "inline-block"})
-    div#tabs(style={top: "2em"})
+    div.ui-front(style={position: "fixed", top: "1em", right: "1em"})
+      button#user-settings #{user.firstName} #{user.lastName}
+      ul#user-menu
+        li Logout
+        li Item 2
+        li Item 3
+
+    script
+      | $(function() {
+      |   var menu = $("#user-menu");
+      |   $("#user-settings").button({
+      |     icons: {
+      |       secondary: "ui-icon-triangle-1-s"
+      |     }
+      |   }).click(function() {
+      |     menu.show();
+      |   });
+      |   menu.menu({
+      |     select: function(event, ui) {
+      |       switch(ui.item.text()) {
+      |       case "Logout":
+      |         document.location = "/signout";
+      |         break;
+      |       default:
+      |         console.log("Menu item slected: " + ui.item.text());
+      |       }
+      |       menu.hide();
+      |     }
+      |   }).position({
+      |     my: "left top ",
+      |     at: "left bottom",
+      |     of: $("#user-settings")
+      |   }).hide();
+      |   $("#user-settings, #user-menu").mouseleave(function() { 
+      |     if(!menu.is(":hover")) {
+      |       menu.hide();
+      |     }
+      |   });
+      | });
+
+    div#tabs(style={position: "absolute", top: "4em"})
       ul
         li
           a(href='#tabs-1') Template
