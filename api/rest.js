@@ -1,6 +1,5 @@
 var io = require('socket.io');
 var mongoose = require('mongoose');
-var bCrypt = require('bcrypt-nodejs');
 
 module.exports = function(server) {
     var socketIO = io(server);
@@ -19,14 +18,7 @@ module.exports = function(server) {
           switch (msg.method) {
           case "CREATE":
             console.log("New " + name + ": " + JSON.stringify(msg.data));
-            var object = new model();
-            for (var key in msg.data) {
-              if (key === "password") {
-                object[key] = createHash(msg.data[key]);
-              } else {
-                object[key] = msg.data[key];
-              }
-            }
+            var object = new model(msg.data);
             object.save(function(err) {
               console.log(msg.method + " " + name + ": " + (err?err:"Ok"));
               if (!err) {
@@ -38,7 +30,8 @@ module.exports = function(server) {
             // Todo
             break;
           case "UPDATE":
-            model.findOneAndUpdate({_id: msg.data._id}, msg.data, function(err) {
+            findByIdAndSave( model, msg.data._id,  msg.data, function(err) {
+              console.log("findOneAndUpdate: " + msg.data);
               if (!err) {
                 notifyAll();
               }
@@ -79,14 +72,29 @@ module.exports = function(server) {
           });
         };
 
-        // Generates hash using bCrypt
-        var createHash = function(password){
-          return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
-        };
-
         // socket just joined
         notifyOne();
       }); // End namespace connection
 
     } // End createNode function
+
+  // Helper to replace findOneAndUpdate
+  // because the setters don't get called otherwise
+  function findByIdAndSave( model, id, data, next ){
+    model.findById( id, function( err, doc ) {
+      if( err ){
+        next( err, null );
+      } else {
+        if(! doc ){
+          next( new Error("Object to save not found"), null );
+        } else {
+          // There must be a better way of doing this
+          for( var k in data ){
+            doc[k] = data[k];
+          }
+          doc.save( next );
+        }
+      }
+    });
+  }
 }

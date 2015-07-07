@@ -2,12 +2,14 @@ div#metadata
   div#teams
 
 script
-  | var socket3 = io( document.location.hostname + ':' + port + '/operator' );
+  | // Todo: pass the 'port' variable in the tube
+  | $( function() {
+  | var socket = io( document.location.hostname + ':' + port + '/operator' );
   | $( "#teams" ).jtable({
   |   title: "Teams",
   |   jqueryuiTheme: true,
   |   actions: {
-  |     listAction: function(response, options){
+  |     listAction: function(response, options) {
   |       return {
   |         "Result": "OK",
   |         "Records": response.team
@@ -26,7 +28,7 @@ script
   |       socket.emit('message', { method: "UPDATE", uri: "team/" + team._id, data: team });
   |       return {
   |         "Result": "OK"
-  |       }
+  |       };
   |     },
   |     deleteAction: function(team){
   |       socket.emit('message', { method: "DELETE", uri: "team/" + team._id, data: team });
@@ -60,17 +62,17 @@ script
   |     }
   |   }
   | }); // End "#teams" jtable
-  | var ref3 = $( "#teams" );
-  | var response3 = {};
+  | var ref = $( "#teams" );
+  | var response = {};
   | socket.on('message', function(msg) {
   |   if ((msg.method == "UPDATE") && (msg.uri == "team")) {
   |     console.log("[Team] received: " + JSON.stringify(msg));
-  |     if (!response2.team) {
-  |       response3.team = msg.data;
-  |       ref3.jtable("load", response3);
+  |     if (!response.team) {
+  |       response.team = msg.data;
+  |       ref.jtable("load", response);
   |     } else {
-  |       response3.team = msg.data;
-  |       ref3.jtable("reload");
+  |       response.team = msg.data;
+  |       ref.jtable("reload");
   |     }
   |   }
   | });
@@ -84,3 +86,4 @@ script
   |   });
   |   return data;
   | }
+  | });
