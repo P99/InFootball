@@ -14,6 +14,15 @@ module.exports = function(server) {
       var handler = socketIO.of(model.namespace());
       handler.on('connection', function (socket) {
         socket.on('message', function(msg) {
+
+          // Todo: refactoring
+          var pairs = parseUri(msg.uri);
+          if (pairs.length) {
+            var pair = pairs.pop();
+            if (pair.model !== name) {
+              return;
+            }
+          }
           console.log("[" + name + "] " + msg.method + " " + msg.uri);
           switch (msg.method) {
           case "CREATE":
@@ -83,7 +92,7 @@ module.exports = function(server) {
   function findByIdAndSave( model, id, data, next ){
     model.findById( id, function( err, doc ) {
       if( err ){
-        next( err, null );
+        next( err );
       } else {
         if(! doc ){
           next( new Error("Object to save not found"), null );
@@ -96,5 +105,15 @@ module.exports = function(server) {
         }
       }
     });
+  }
+
+  function parseUri(uri) {
+    var result = [];
+    var tokens = uri.split("/");
+    var max = tokens.length;
+    for (var i=0; i<max; i+=2) {
+      result.push({ model: tokens[i], instance: i+1<max ? tokens[i+1] : "any" });
+    }
+    return result;
   }
 }

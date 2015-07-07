@@ -2,7 +2,7 @@ div#metadata
   div#teams
 
 script
-  | // Todo: pass the 'port' variable in the tube
+  | // Todo: pass the 'port' variable in the tube?
   | $( function() {
   | var socket = io( document.location.hostname + ':' + port + '/operator' );
   | $( "#teams" ).jtable({
@@ -59,6 +59,21 @@ script
   |     },
   |     stadium: {
   |       title: "Stade"
+  |     },
+  |     players: {
+  |       title: "Joueurs",
+  |       edit: false,
+  |       create: false,
+  |       display: function(team) {
+  |         var $button = $('<button />');
+  |         $button.button({ 
+  |           icons: { secondary: "ui-icon-triangle-1-e" },
+  |           label: "edit"
+  |         }).click(function() {
+  |           console.log("Editing team/" + team.record._id + "/player/");
+  |         });
+  |         return $button;
+  |       }
   |     }
   |   }
   | }); // End "#teams" jtable
