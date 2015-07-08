@@ -77,4 +77,5 @@ webServer.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080,
 require('./models/user');
 require('./models/template');
 require('./models/team');
+require('./models/player');
 var restAPI = require('./api/rest')(webServer);

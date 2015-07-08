@@ -17,6 +17,7 @@ module.exports = function(server) {
 
           // Todo: refactoring
           var pairs = parseUri(msg.uri);
+          var index = 0;
           if (pairs.length) {
             var pair = pairs.pop();
             if (pair.model !== name) {
@@ -26,21 +27,37 @@ module.exports = function(server) {
           console.log("[" + name + "] " + msg.method + " " + msg.uri);
           switch (msg.method) {
           case "CREATE":
-            console.log("New " + name + ": " + JSON.stringify(msg.data));
-            var object = new model(msg.data);
-            object.save(function(err) {
-              console.log(msg.method + " " + name + ": " + (err?err:"Ok"));
-              if (!err) {
-                notifyAll();
-              }
-            });
+            if (pair.instance == "new") {
+              console.log("New " + name + ": " + JSON.stringify(msg.data));
+              var object = new model(msg.data);
+              object.save(function(err) {
+                if (!err) {
+                  // try to attach the new object to its parent
+                  console.log("Saved");
+                  pair = pairs.pop();
+                  if (pair) {
+                    pair.model = capitalizeFirstLetter(pair.model);
+                    mongoose.models[pair.model].findById(pair.instance, function( err, doc ) {
+                      if (!err && doc && doc[name]) {
+                        doc[name].push(object._id);
+                        doc.save( function (err) {
+                          if (!err) {
+                            console.log("Added " + pair.model + "." + name + "[" + object._id + "]");
+                          }
+                        });
+                      }
+                    });
+                  }
+                  notifyAll();
+                }
+              });
+            }
             break;
           case "READ":
             // Todo
             break;
           case "UPDATE":
             findByIdAndSave( model, msg.data._id,  msg.data, function(err) {
-              console.log("findOneAndUpdate: " + msg.data);
               if (!err) {
                 notifyAll();
               }
@@ -80,6 +97,10 @@ module.exports = function(server) {
             }
           });
         };
+
+        var capitalizeFirstLetter = function(string) {
+          return string.charAt(0).toUpperCase() + string.slice(1);
+        }
 
         // socket just joined
         notifyOne();
