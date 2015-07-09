@@ -9,7 +9,7 @@ var Schema = mongoose.Schema({
 	 president: String,
 	 stadium: String,
   logo: String,
-  player: [ObjectId]
+  players: [ObjectId]
 });
 
 Schema.statics.namespace = function() {
