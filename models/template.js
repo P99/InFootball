@@ -12,4 +12,4 @@ Schema.statics.namespace = function() {
   return "operator";
 }
 
-module.exports = mongoose.model('Template', Schema);
+module.exports = mongoose.model('templates', Schema);

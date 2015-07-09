@@ -3,52 +3,52 @@ var mongoose = require('mongoose');
 
 module.exports = function(server) {
     var socketIO = io(server);
+    var names = {};
     for (var name in mongoose.models) {
       console.log("Mongosse models: " + name);
-      var resource = name.toLowerCase();
-      var model = mongoose.models[name];
-      createNode(resource, model);
+      names[mongoose.models[name].namespace()] = true;
     } // End for each Mongoose model
+    Object.keys(names).forEach(function(key) {
+      console.log("Socket.IO namespaces: " + key);
+      createNameSpace(key);
+    });
 
-    function createNode(name, model) {
-      var handler = socketIO.of(model.namespace());
+    function createNameSpace(name) {
+      var handler = socketIO.of(name);
       handler.on('connection', function (socket) {
         socket.on('message', function(msg) {
 
           // Todo: refactoring
           var pairs = parseUri(msg.uri);
-          var index = 0;
-          if (pairs.length) {
-            var pair = pairs.pop();
-            if (pair.model !== name) {
-              return;
-            }
-          }
-          console.log("[" + name + "] " + msg.method + " " + msg.uri);
+          var pair = pairs.pop();
+          var model = mongoose.models[pair.model];
+
+          console.log("[" + pair.model + "] " + msg.method + " " + msg.uri);
           switch (msg.method) {
           case "CREATE":
             if (pair.instance == "new") {
-              console.log("New " + name + ": " + JSON.stringify(msg.data));
+              console.log("New " + pair.model + ": " + JSON.stringify(msg.data));
               var object = new model(msg.data);
               object.save(function(err) {
                 if (!err) {
                   // try to attach the new object to its parent
                   console.log("Saved");
+                  var child = pair.model;
                   pair = pairs.pop();
                   if (pair) {
-                    pair.model = capitalizeFirstLetter(pair.model);
-                    mongoose.models[pair.model].findById(pair.instance, function( err, doc ) {
-                      if (!err && doc && doc[name]) {
-                        doc[name].push(object._id);
+                    model = mongoose.models[pair.model];
+                    model.findById(pair.instance, function( err, doc ) {
+                      if (!err && doc && doc[child]) {
+                        doc[child].push(object._id);
                         doc.save( function (err) {
                           if (!err) {
-                            console.log("Added " + pair.model + "." + name + "[" + object._id + "]");
+                            console.log("Added " + pair.model + "." + child + "[" + object._id + "]");
                           }
                         });
                       }
                     });
                   }
-                  notifyAll();
+                  notifyAll(child);
                 }
               });
             }
@@ -59,14 +59,14 @@ module.exports = function(server) {
           case "UPDATE":
             findByIdAndSave( model, msg.data._id,  msg.data, function(err) {
               if (!err) {
-                notifyAll();
+                notifyAll(pair.model);
               }
             });
             break;
           case "DELETE":
             model.findOneAndRemove(msg.data, function(err) {
               if (!err) {
-                notifyAll();
+                notifyAll(pair.model);
               }
             });
             break;
@@ -81,16 +81,17 @@ module.exports = function(server) {
         });
 
         // Utility
-        var notifyOne = function() {
+        var notifyOne = function(name) {
+          model = mongoose.models[name];
           model.find({}, function(err, records) {
             if (!err) {
-              //handler.connected[id].emit('message', { method: "UPDATE", uri: (name + "s"), data: records });
               socket.emit('message', { method: "UPDATE", uri: name, data: records });
             }
           });
         }
 
-        var notifyAll = function() {
+        var notifyAll = function(name) {
+          model = mongoose.models[name];
           model.find({}, function(err, records) {
             if (!err) {
               handler.emit('message', { method: "UPDATE", uri: name, data: records });
@@ -98,12 +99,11 @@ module.exports = function(server) {
           });
         };
 
-        var capitalizeFirstLetter = function(string) {
-          return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
         // socket just joined
-        notifyOne();
+        notifyOne("teams");
+        notifyOne("players");
+        notifyOne("users");
+        notifyOne("templates");
       }); // End namespace connection
 
     } // End createNode function

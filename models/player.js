@@ -16,4 +16,4 @@ Schema.statics.namespace = function() {
   return "operator";
 }
 
-module.exports = mongoose.model('Player', Schema);
+module.exports = mongoose.model('players', Schema);

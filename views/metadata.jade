@@ -19,7 +19,7 @@ script
   |     },
   |     createAction: function(postData) {
   |       var team = extract(postData);
-  |       socket.emit('message', { method: "CREATE", uri: "team/new", data: team });
+  |       socket.emit('message', { method: "CREATE", uri: "teams/new", data: team });
   |       return {
   |         "Result": "OK",
   |         "Record": team
@@ -27,13 +27,13 @@ script
   |     },
   |     updateAction: function(postData) {
   |       var team = extract(postData);
-  |       socket.emit('message', { method: "UPDATE", uri: "team/" + team._id, data: team });
+  |       socket.emit('message', { method: "UPDATE", uri: "teams/" + team._id, data: team });
   |       return {
   |         "Result": "OK"
   |       };
   |     },
   |     deleteAction: function(team){
-  |       socket.emit('message', { method: "DELETE", uri: "team/" + team._id, data: team });
+  |       socket.emit('message', { method: "DELETE", uri: "teams/" + team._id, data: team });
   |       return {
   |         "Result": "OK"
   |       };
@@ -72,11 +72,11 @@ script
   |           icons: { secondary: "ui-icon-triangle-1-e" },
   |           label: "edit"
   |         }).click(function() {
-  |           console.log("Editing team/" + team.record._id + "/player/");
-  |           root = "team/" + team.record._id + "/";
+  |           console.log("Editing team/" + team.record._id + "/players/");
+  |           root = "teams/" + team.record._id + "/";
   |           $( "#teams" ).hide();
   |           $( "#players" ).jtable('option', 'title', "Equipes / " + team.record.name + " / Joueurs").show();
-  |           socket.emit('message', { method: "READ", uri: root + "player", data: {} });
+  |           socket.emit('message', { method: "READ", uri: root + "players", data: {} });
   |         });
   |         return $button;
   |       }
@@ -106,7 +106,7 @@ script
   |     },
   |     createAction: function(postData) {
   |       var model = extract(postData);
-  |       socket.emit('message', { method: "CREATE", uri: root + "player/new", data: model });
+  |       socket.emit('message', { method: "CREATE", uri: root + "players/new", data: model });
   |       return {
   |         "Result": "OK",
   |         "Record": model
@@ -114,13 +114,13 @@ script
   |     },
   |     updateAction: function(postData) {
   |       var model = extract(postData);
-  |       socket.emit('message', { method: "UPDATE", uri: root + "player/" + model._id, data: model });
+  |       socket.emit('message', { method: "UPDATE", uri: root + "players/" + model._id, data: model });
   |       return {
   |         "Result": "OK"
   |       };
   |     },
   |     deleteAction: function(model){
-  |       socket.emit('message', { method: "DELETE", uri: root + "player/" + model._id, data: model });
+  |       socket.emit('message', { method: "DELETE", uri: root + "players/" + model._id, data: model });
   |       return {
   |         "Result": "OK"
   |       };
@@ -159,7 +159,7 @@ script
   | var player_ref = $( "#players" );
   | var response = {};
   | socket.on('message', function(msg) {
-  |   if ((msg.method == "UPDATE") && (msg.uri == "team")) {
+  |   if ((msg.method == "UPDATE") && (msg.uri == "teams")) {
   |     console.log("[Team] received: " + JSON.stringify(msg));
   |     if (!response.team) {
   |       response.team = msg.data;
@@ -169,7 +169,7 @@ script
   |       team_ref.jtable("reload");
   |     }
   |   }
-  |   else if ((msg.method =="UPDATE") && (msg.uri == (root + "player"))) {
+  |   else if ((msg.method =="UPDATE") && (msg.uri == (root + "players"))) {
   |     console.log("[Player] received: " + JSON.stringify(msg));
   |     if (!response.player) {
   |       response.player = msg.data;
