@@ -6,7 +6,12 @@ script
   | // Todo: pass the 'port' variable in the tube?
   | $( function() {
   | var socket = io( document.location.hostname + ':' + port + '/operator' );
-  | var root = "";
+  | var context = {
+  |   players: {
+  |     root: ""
+  |   }
+  | };
+  | var promises = {};
   | $( "#teams" ).jtable({
   |   title: "Equipes",
   |   jqueryuiTheme: true,
@@ -62,7 +67,7 @@ script
   |     stadium: {
   |       title: "Stade"
   |     },
-  |     player: {
+  |     players: {
   |       title: "Joueurs",
   |       edit: false,
   |       create: false,
@@ -73,10 +78,10 @@ script
   |           label: "edit"
   |         }).click(function() {
   |           console.log("Editing team/" + team.record._id + "/players/");
-  |           root = "teams/" + team.record._id + "/";
+  |           context["players"].root = "teams/" + team.record._id + "/";
   |           $( "#teams" ).hide();
-  |           $( "#players" ).jtable('option', 'title', "Equipes / " + team.record.name + " / Joueurs").show();
-  |           socket.emit('message', { method: "READ", uri: root + "players", data: {} });
+  |           $( "#players" ).jtable('load').show();
+  |           $( "#players" ).find('.jtable-title-text').html("Equipes / " + team.record.name + " / Joueurs");
   |         });
   |         return $button;
   |       }
@@ -98,32 +103,19 @@ script
   |     }]
   |   },
   |   actions: {
-  |     listAction: function(response, options) {
-  |       return {
-  |         "Result": "OK",
-  |         "Records": response.player
-  |       };
+  |     listAction: function(postData, options) {
+  |       return emit("READ", "players/any");
   |     },
   |     createAction: function(postData) {
-  |       var model = extract(postData);
-  |       socket.emit('message', { method: "CREATE", uri: root + "players/new", data: model });
-  |       return {
-  |         "Result": "OK",
-  |         "Record": model
-  |       };
+  |       var data = extract(postData);
+  |       return emit("CREATE", "players/new", data);
   |     },
   |     updateAction: function(postData) {
-  |       var model = extract(postData);
-  |       socket.emit('message', { method: "UPDATE", uri: root + "players/" + model._id, data: model });
-  |       return {
-  |         "Result": "OK"
-  |       };
+  |       var data = extract(postData);
+  |       return emit("UPDATE", "players/" + data._id, data);
   |     },
-  |     deleteAction: function(model){
-  |       socket.emit('message', { method: "DELETE", uri: root + "players/" + model._id, data: model });
-  |       return {
-  |         "Result": "OK"
-  |       };
+  |     deleteAction: function(data){
+  |       return emit("DELETE", "players/" + data._id, data);
   |     }
   |   },
   |   fields: {
@@ -159,7 +151,19 @@ script
   | var player_ref = $( "#players" );
   | var response = {};
   | socket.on('message', function(msg) {
-  |   if ((msg.method == "UPDATE") && (msg.uri == "teams")) {
+  |   if (promises[msg.token]) {
+  |     var data = {};
+  |     data["Result"] = "OK";
+  |     if (msg.data instanceof Array) {
+  |       data["Records"] = msg.data;
+  |     } else if (msg.data instanceof Object) {
+  |       data["Record"] = msg.data;
+  |     }
+  |     console.log("Before resolve: " + JSON.stringify(data));
+  |     promises[msg.token].resolve(data);
+  |     delete promises[msg.token];
+  |   }
+  |   else if ((msg.method == "UPDATE") && (msg.uri == "teams")) {
   |     console.log("[Team] received: " + JSON.stringify(msg));
   |     if (!response.team) {
   |       response.team = msg.data;
@@ -169,18 +173,26 @@ script
   |       team_ref.jtable("reload");
   |     }
   |   }
-  |   else if ((msg.method =="UPDATE") && (msg.uri == (root + "players"))) {
-  |     console.log("[Player] received: " + JSON.stringify(msg));
-  |     if (!response.player) {
-  |       response.player = msg.data;
-  |       player_ref.jtable("load", response);
-  |     } else {
-  |       response.player = msg.data;
-  |       player_ref.jtable("reload");
-  |       console.log("Reload player");
+  |   else {
+  |     // split msg.uri and find the last model
+  |     switch (msg.method) {
+  |     case "CREATE":
+  |       break;
+  |     case "UPDATE":
+  |       break;
+  |     case "DELETE":
+  |       break;
   |     }
   |   }
   | });
+  | function emit(_method, _uri, _data) {
+  |   var model = _uri.split("/")[0];
+  |   var _token = token();
+  |   socket.emit('message', { method: _method, uri: context[model].root + _uri, token: _token, data: _data });
+  |   return $.Deferred(function (promise) {
+  |     promises[_token] = promise;
+  |   });
+  | } 
   | //
   | //
   | // Utility
@@ -190,8 +202,12 @@ script
   |   var decode = "";
   |   pairs.forEach( function(key) {
   |     token = key.split("=");
-  |     data[token[0]] = token[1].replace("+", " ");
+  |     data[token[0]] = token[1].replace(/\+/g, " ");
   |   });
   |   return data;
+  | }
+  | // Generate a random token
+  | function token() {
+  |   return Math.random().toString(36).substr(2);
   | }
   | });

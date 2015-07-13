@@ -23,6 +23,9 @@ module.exports = function(server) {
           var pair = pairs.pop();
           var model = mongoose.models[pair.model];
 
+          // Default to error
+          msg.status = "ERROR";
+
           console.log("[" + pair.model + "] " + msg.method + " " + msg.uri);
           switch (msg.method) {
           case "CREATE":
@@ -30,7 +33,10 @@ module.exports = function(server) {
               console.log("New " + pair.model + ": " + JSON.stringify(msg.data));
               var object = new model(msg.data);
               object.save(function(err) {
-                if (!err) {
+                if (err) {
+                  msg.data = "Failed to save " + pair.model;
+                  reply(msg);
+                } else {
                   // try to attach the new object to its parent
                   console.log("Saved");
                   var child = pair.model;
@@ -40,6 +46,7 @@ module.exports = function(server) {
                     model.findById(pair.instance, function( err, doc ) {
                       if (!err && doc && doc[child]) {
                         doc[child].push(object._id);
+                        console.log("JSON: " + JSON.stringify(doc));
                         doc.save( function (err) {
                           if (!err) {
                             console.log("Added " + pair.model + "." + child + "[" + object._id + "]");
@@ -48,32 +55,72 @@ module.exports = function(server) {
                       }
                     });
                   }
-                  notifyAll(child);
+                  msg.status = "OK";
+                  msg.data = object;
+                  reply(msg);
                 }
               });
             }
+            reply(msg);
             break;
           case "READ":
-            // Todo
+            if (pair.instance == "any") {
+              var child = pair.model;
+              pair = pairs.pop();
+              if (pair) {
+                model = mongoose.models[pair.model];
+                model.findById(pair.instance, function( err, doc ) {
+                  if (!err && doc && doc[child]) {
+                    model = mongoose.models[child];
+                    model.find({_id: { $in: doc[child] }}, function( err, children ) {
+                      if (!err) {
+                        console.log("Players: " + JSON.stringify(children));
+                        msg.status = "OK";
+                        msg.data = children;
+                      }
+                      reply(msg);
+                    });
+                  } else {
+                    msg.data = "Failed to read " + pair.model;
+                    reply(msg);
+                  }
+                });
+              }
+            }
             break;
           case "UPDATE":
             findByIdAndSave( model, msg.data._id,  msg.data, function(err) {
               if (!err) {
-                notifyAll(pair.model);
+                msg.status = "OK";
               }
+              reply(msg);
             });
             break;
           case "DELETE":
             model.findOneAndRemove(msg.data, function(err) {
               if (!err) {
-                notifyAll(pair.model);
+                //notifyAll(pair.model);
+                msg.status = "OK";
+                delete msg.data;
               }
+              reply(msg);
             });
             break;
           default:
             console.log("Unkown method: " + msg.method);
             break;
           }
+
+          function reply(message) {
+												if ((message.status == "OK") && (message.method !== "READ")) {
+														console.log("Reply all");
+														handler.emit('message', message);
+												} else {
+														console.log("Reply one");
+														socket.emit('message', message);
+												}
+          }
+
         }); // End handling 'message' event
 
         socket.on('disconnect', function() {
@@ -101,7 +148,6 @@ module.exports = function(server) {
 
         // socket just joined
         notifyOne("teams");
-        notifyOne("players");
         notifyOne("users");
         notifyOne("templates");
       }); // End namespace connection
