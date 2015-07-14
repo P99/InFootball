@@ -23,10 +23,9 @@ module.exports = function(server) {
           var pair = pairs.pop();
           var model = mongoose.models[pair.model];
 
-          // Default to error
-          msg.status = "ERROR";
-
+          msg.status = "ERROR"; // Defaults to error
           console.log("[" + pair.model + "] " + msg.method + " " + msg.uri);
+  
           switch (msg.method) {
           case "CREATE":
             if (pair.instance == "new") {
@@ -37,9 +36,10 @@ module.exports = function(server) {
                   console.log("err object save");
                   msg.data = "Failed to save " + pair.model;
                 } else {
-                  // try to attach the new object to its parent
-                  console.log("Saved");
+                  msg.status = "OK";
+                  msg.data = object;
                   if (pairs.length) {
+                    // Attach the new object to its parent
                     var child = pair.model;
                     pair = pairs.pop();
                     model = mongoose.models[pair.model];
@@ -56,10 +56,11 @@ module.exports = function(server) {
                     });
                   }
                 }
-                msg.status = "OK";
-                msg.data = object;
                 reply(msg);
               });
+            } else {
+              msg.data = "Invalid uri (should contain 'new')";
+              reply(msg);
             }
             break;
           case "READ":
@@ -69,35 +70,33 @@ module.exports = function(server) {
                 model.find({}, function(err, docs) {
                   if (!err) {
                     msg.status = "OK";
-																				msg.data = docs;
+                    msg.data = docs;
                   }
                   reply(msg);
                 });
               } else {
-																var child = pair.model;
-																pair = pairs.pop();
-																if (pair) {
-																		model = mongoose.models[pair.model];
-																		model.findById(pair.instance, function( err, doc ) {
-																				if (!err && doc && doc[child]) {
-																						model = mongoose.models[child];
-																						model.find({_id: { $in: doc[child] }}, function( err, children ) {
-																								if (!err) {
-																										console.log("Players: " + JSON.stringify(children));
-																										msg.status = "OK";
-																										msg.data = children;
-																								}
-																								reply(msg);
-																						});
-																				} else {
-																						msg.data = "Failed to read " + pair.model;
-																						reply(msg);
-																				}
-																		});
-																}
+                var child = pair.model;
+                pair = pairs.pop();
+                model = mongoose.models[pair.model];
+                model.findById(pair.instance, function( err, doc ) {
+                  if (!err && doc && doc[child]) {
+                    model = mongoose.models[child];
+                    model.find({_id: { $in: doc[child] }}, function( err, children ) {
+                      if (!err) {
+                        console.log("Players: " + JSON.stringify(children));
+                        msg.status = "OK";
+                        msg.data = children;
+                      }
+                      reply(msg);
+                    });
+                  } else {
+                    msg.data = "Failed to read " + pair.model;
+                    reply(msg);
+                  }
+                });
               }
             } else {
-              msg.data = "Invalid uri (should be ending by any)";
+              msg.data = "Invalid uri (should contain 'any')";
               reply(msg);
             }
             break;
@@ -117,6 +116,26 @@ module.exports = function(server) {
               console.log("delete: " + JSON.stringify(msg));
               reply(msg);
             });
+            if (pairs.length) {
+              // Remove the reference from the parent if any
+              var child = pair.model;
+              pair = pairs.pop();
+              model = mongoose.models[pair.model];
+              model.findById(pair.instance, function( err, doc ) {
+                if (!err && doc && doc[child]) {
+                  var index = doc[child].indexOf(msg.data._id);
+                  if (index >= 0) {
+                    console.log("Removing " + child + "/" + msg.data._id + " from " + pair.model + "/" + pair.instance);
+                    doc[child].splice(index, 1);
+                    doc.save( function (err) {
+                      if (!err) {
+                        console.log("Removed OK");
+                      }
+                    });
+                  }
+                }
+              });
+            }
             break;
           default:
             console.log("Unkown method: " + msg.method);
@@ -124,13 +143,13 @@ module.exports = function(server) {
           }
 
           function reply(message) {
-												if ((message.status == "OK") && (message.method !== "READ")) {
-														console.log("Reply all");
-														handler.emit('message', message);
-												} else {
-														console.log("Reply one");
-														socket.emit('message', message);
-												}
+                        if ((message.status == "OK") && (message.method !== "READ")) {
+                            console.log("Reply all");
+                            handler.emit('message', message);
+                        } else {
+                            console.log("Reply one");
+                            socket.emit('message', message);
+                        }
           }
 
         }); // End handling 'message' event
@@ -139,28 +158,6 @@ module.exports = function(server) {
           console.log("[" + name + "] user disconnected");
         });
 
-        // Utility
-        var notifyOne = function(name) {
-          model = mongoose.models[name];
-          model.find({}, function(err, records) {
-            if (!err) {
-              socket.emit('message', { method: "UPDATE", uri: name, data: records });
-            }
-          });
-        }
-
-        var notifyAll = function(name) {
-          model = mongoose.models[name];
-          model.find({}, function(err, records) {
-            if (!err) {
-              handler.emit('message', { method: "UPDATE", uri: name, data: records });
-            }
-          });
-        };
-
-        // socket just joined
-        notifyOne("users");
-        notifyOne("templates");
       }); // End namespace connection
 
     } // End createNode function

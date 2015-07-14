@@ -3,14 +3,6 @@ div#metadata
   div#players
 
 script
-  | // Todo: pass the 'port' variable in the tube?
-  | $( function() {
-  | var socket = io( document.location.hostname + ':' + port + '/operator' );
-  | var context = {
-  |   teams: { root: "" },
-  |   players: { root: "" }
-  | };
-  | var promises = {};
   | $( "#teams" ).jtable({
   |   title: "Equipes",
   |   jqueryuiTheme: true,
@@ -134,64 +126,3 @@ script
   | }).hide(); // End "#players" jtable
   | //
   | $( "#teams" ).jtable("load", {});
-  | socket.on('message', function(msg) {
-  |   if (promises[msg.token]) {
-  |     var data = {};
-  |     data["Result"] = "OK";
-  |     if (msg.data instanceof Array) {
-  |       data["Records"] = msg.data;
-  |     } else if (msg.data instanceof Object) {
-  |       data["Record"] = msg.data;
-  |     }
-  |     promises[msg.token].resolve(data);
-  |     delete promises[msg.token];
-  |   }
-  |   else {
-  |     var model = modelLast(msg.uri);
-  |     var ref = $("#" + model);
-  |     switch (msg.method) {
-  |     case "CREATE":
-  |       ref.jtable('addRecord', {record: msg.data, clientOnly: true });
-  |       break;
-  |     case "UPDATE":
-  |       ref.jtable('updateRecord', {record: msg.data, clientOnly: true });
-  |       break;
-  |     case "DELETE":
-  |       ref.jtable('deleteRecord', {key: msg.data._id, clientOnly: true });
-  |       break;
-  |     }
-  |   }
-  | });
-  | function emit(_method, _uri, _data) {
-  |   var model = _uri.split("/")[0];
-  |   var _token = token();
-  |   socket.emit('message', { method: _method, uri: context[model].root + _uri, token: _token, data: _data });
-  |   return $.Deferred(function (promise) {
-  |     promises[_token] = promise;
-  |   });
-  | } 
-  | //
-  | //
-  | // Utility
-  | function extract(uri) {
-  |   var data = {}, token;
-  |   var pairs = uri.split("&");
-  |   var decode = "";
-  |   pairs.forEach( function(key) {
-  |     token = key.split("=");
-  |     data[token[0]] = decodeURIComponent(token[1].replace(/\+/g, " "));
-  |   });
-  |   return data;
-  | }
-  | // Generate a random token
-  | function token() {
-  |   return Math.random().toString(36).substr(2);
-  | }
-  | function modelLast(uri) {
-  |   var tmp = uri.split("/");
-  |   var len = tmp.length;
-  |   var model = (len % 2) ? tmp[len-1] : tmp[len-2];
-  |   console.log("Model: uri=" + uri + " > " + model);
-  |   return model;
-  | }
-  | });

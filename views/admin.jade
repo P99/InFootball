@@ -15,6 +15,7 @@ html
     script
       | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8000 : 8080;
       | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
+    include socket_operator.jade
 
   body
     div.ui-front(style={position: "fixed", top: "1em", right: "1em"})
