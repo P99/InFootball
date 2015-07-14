@@ -34,14 +34,14 @@ module.exports = function(server) {
               var object = new model(msg.data);
               object.save(function(err) {
                 if (err) {
+                  console.log("err object save");
                   msg.data = "Failed to save " + pair.model;
-                  reply(msg);
                 } else {
                   // try to attach the new object to its parent
                   console.log("Saved");
-                  var child = pair.model;
-                  pair = pairs.pop();
-                  if (pair) {
+                  if (pairs.length) {
+                    var child = pair.model;
+                    pair = pairs.pop();
                     model = mongoose.models[pair.model];
                     model.findById(pair.instance, function( err, doc ) {
                       if (!err && doc && doc[child]) {
@@ -55,37 +55,50 @@ module.exports = function(server) {
                       }
                     });
                   }
-                  msg.status = "OK";
-                  msg.data = object;
-                  reply(msg);
                 }
+                msg.status = "OK";
+                msg.data = object;
+                reply(msg);
               });
             }
-            reply(msg);
             break;
           case "READ":
             if (pair.instance == "any") {
-              var child = pair.model;
-              pair = pairs.pop();
-              if (pair) {
-                model = mongoose.models[pair.model];
-                model.findById(pair.instance, function( err, doc ) {
-                  if (!err && doc && doc[child]) {
-                    model = mongoose.models[child];
-                    model.find({_id: { $in: doc[child] }}, function( err, children ) {
-                      if (!err) {
-                        console.log("Players: " + JSON.stringify(children));
-                        msg.status = "OK";
-                        msg.data = children;
-                      }
-                      reply(msg);
-                    });
-                  } else {
-                    msg.data = "Failed to read " + pair.model;
-                    reply(msg);
+              if (!pairs.length) {
+                // root node > dump all the collection
+                model.find({}, function(err, docs) {
+                  if (!err) {
+                    msg.status = "OK";
+																				msg.data = docs;
                   }
+                  reply(msg);
                 });
+              } else {
+																var child = pair.model;
+																pair = pairs.pop();
+																if (pair) {
+																		model = mongoose.models[pair.model];
+																		model.findById(pair.instance, function( err, doc ) {
+																				if (!err && doc && doc[child]) {
+																						model = mongoose.models[child];
+																						model.find({_id: { $in: doc[child] }}, function( err, children ) {
+																								if (!err) {
+																										console.log("Players: " + JSON.stringify(children));
+																										msg.status = "OK";
+																										msg.data = children;
+																								}
+																								reply(msg);
+																						});
+																				} else {
+																						msg.data = "Failed to read " + pair.model;
+																						reply(msg);
+																				}
+																		});
+																}
               }
+            } else {
+              msg.data = "Invalid uri (should be ending by any)";
+              reply(msg);
             }
             break;
           case "UPDATE":
@@ -99,10 +112,9 @@ module.exports = function(server) {
           case "DELETE":
             model.findOneAndRemove(msg.data, function(err) {
               if (!err) {
-                //notifyAll(pair.model);
                 msg.status = "OK";
-                delete msg.data;
               }
+              console.log("delete: " + JSON.stringify(msg));
               reply(msg);
             });
             break;
@@ -147,7 +159,6 @@ module.exports = function(server) {
         };
 
         // socket just joined
-        notifyOne("teams");
         notifyOne("users");
         notifyOne("templates");
       }); // End namespace connection

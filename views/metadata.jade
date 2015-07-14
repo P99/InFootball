@@ -7,41 +7,27 @@ script
   | $( function() {
   | var socket = io( document.location.hostname + ':' + port + '/operator' );
   | var context = {
-  |   players: {
-  |     root: ""
-  |   }
+  |   teams: { root: "" },
+  |   players: { root: "" }
   | };
   | var promises = {};
   | $( "#teams" ).jtable({
   |   title: "Equipes",
   |   jqueryuiTheme: true,
   |   actions: {
-  |     listAction: function(response, options) {
-  |       return {
-  |         "Result": "OK",
-  |         "Records": response.team
-  |       };
+  |     listAction: function(postData, options) {
+  |       return emit("READ", "teams/any");
   |     },
   |     createAction: function(postData) {
-  |       var team = extract(postData);
-  |       socket.emit('message', { method: "CREATE", uri: "teams/new", data: team });
-  |       return {
-  |         "Result": "OK",
-  |         "Record": team
-  |       };
+  |       var data = extract(postData);
+  |       return emit("CREATE", "teams/new", data);
   |     },
   |     updateAction: function(postData) {
-  |       var team = extract(postData);
-  |       socket.emit('message', { method: "UPDATE", uri: "teams/" + team._id, data: team });
-  |       return {
-  |         "Result": "OK"
-  |       };
+  |       var data = extract(postData);
+  |       return emit("UPDATE", "teams/" + data._id, data);
   |     },
-  |     deleteAction: function(team){
-  |       socket.emit('message', { method: "DELETE", uri: "teams/" + team._id, data: team });
-  |       return {
-  |         "Result": "OK"
-  |       };
+  |     deleteAction: function(data){
+  |       return emit("DELETE", "teams/" + data._id, data);
   |     }
   |   },
   |   fields: {
@@ -147,9 +133,7 @@ script
   |   }
   | }).hide(); // End "#players" jtable
   | //
-  | var team_ref = $( "#teams" );
-  | var player_ref = $( "#players" );
-  | var response = {};
+  | $( "#teams" ).jtable("load", {});
   | socket.on('message', function(msg) {
   |   if (promises[msg.token]) {
   |     var data = {};
@@ -159,28 +143,21 @@ script
   |     } else if (msg.data instanceof Object) {
   |       data["Record"] = msg.data;
   |     }
-  |     console.log("Before resolve: " + JSON.stringify(data));
   |     promises[msg.token].resolve(data);
   |     delete promises[msg.token];
   |   }
-  |   else if ((msg.method == "UPDATE") && (msg.uri == "teams")) {
-  |     console.log("[Team] received: " + JSON.stringify(msg));
-  |     if (!response.team) {
-  |       response.team = msg.data;
-  |       team_ref.jtable("load", response);
-  |     } else {
-  |       response.team = msg.data;
-  |       team_ref.jtable("reload");
-  |     }
-  |   }
   |   else {
-  |     // split msg.uri and find the last model
+  |     var model = modelLast(msg.uri);
+  |     var ref = $("#" + model);
   |     switch (msg.method) {
   |     case "CREATE":
+  |       ref.jtable('addRecord', {record: msg.data, clientOnly: true });
   |       break;
   |     case "UPDATE":
+  |       ref.jtable('updateRecord', {record: msg.data, clientOnly: true });
   |       break;
   |     case "DELETE":
+  |       ref.jtable('deleteRecord', {key: msg.data._id, clientOnly: true });
   |       break;
   |     }
   |   }
@@ -209,5 +186,12 @@ script
   | // Generate a random token
   | function token() {
   |   return Math.random().toString(36).substr(2);
+  | }
+  | function modelLast(uri) {
+  |   var tmp = uri.split("/");
+  |   var len = tmp.length;
+  |   var model = (len % 2) ? tmp[len-1] : tmp[len-2];
+  |   console.log("Model: uri=" + uri + " > " + model);
+  |   return model;
   | }
   | });
