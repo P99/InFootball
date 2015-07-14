@@ -179,7 +179,7 @@ script
   |   var decode = "";
   |   pairs.forEach( function(key) {
   |     token = key.split("=");
-  |     data[token[0]] = token[1].replace(/\+/g, " ");
+  |     data[token[0]] = decodeURIComponent(token[1].replace(/\+/g, " "));
   |   });
   |   return data;
   | }
