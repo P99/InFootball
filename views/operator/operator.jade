@@ -1,0 +1,38 @@
+doctype html
+html
+  head
+    title= 'InFootball'
+    link(href='/jquery/jquery-ui.min.css', rel='stylesheet')
+    link(href='/jquery/jtable.2.4.0/jtable_jqueryui.css', rel='stylesheet')
+    style
+      block style
+
+    script(src='/jquery/jquery.js')
+    script(src='/jquery/jquery-ui.min.js')
+    script(src='/jquery/jquery.jtable.js')
+    script(src='/javascript/socket.io.js')
+    script
+      | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8000 : 8080;
+      | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
+      | $( function() {
+      |   $( "#tabs" ).tabs();
+      | });
+      include header.js
+      include socket.js
+      include template.js
+      include metadata.js
+
+  body
+    include header.jade
+
+    div#tabs(style={position: "absolute", top: "4em"})
+      ul
+        li
+          a(href='#tabs-1') Template
+        li
+          a(href='#tabs-2') Metadata
+
+      div#tabs-1
+        include template.jade
+      div#tabs-2
+        include metadata.jade
