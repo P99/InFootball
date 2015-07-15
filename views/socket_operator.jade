@@ -23,16 +23,18 @@ script
   |   else {
   |     var model = modelLast(msg.uri);
   |     var ref = $("#" + model);
-  |     switch (msg.method) {
-  |     case "CREATE":
-  |       ref.jtable('addRecord', {record: msg.data, clientOnly: true });
-  |       break;
-  |     case "UPDATE":
-  |       ref.jtable('updateRecord', {record: msg.data, clientOnly: true });
-  |       break;
-  |     case "DELETE":
-  |       ref.jtable('deleteRecord', {key: msg.data._id, clientOnly: true });
-  |       break;
+  |     if((context[model].root) && (msg.uri.indexOf(context[model].root) >= 0)) {
+  |       switch (msg.method) {
+  |       case "CREATE":
+  |         ref.jtable('addRecord', {record: msg.data, clientOnly: true });
+  |         break;
+  |       case "UPDATE":
+  |         ref.jtable('updateRecord', {record: msg.data, clientOnly: true });
+  |         break;
+  |       case "DELETE":
+  |         ref.jtable('deleteRecord', {key: msg.data._id, clientOnly: true });
+  |         break;
+  |       }
   |     }
   |   }
   | });
