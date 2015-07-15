@@ -22,7 +22,7 @@
     else {
       var model = modelLast(msg.uri);
       var ref = $("#" + model);
-      if((context[model].root) && (msg.uri.indexOf(context[model].root) >= 0)) {
+      if((!context[model].root) && (msg.uri.indexOf(context[model].root) >= 0)) {
         switch (msg.method) {
         case "CREATE":
           ref.jtable('addRecord', {record: msg.data, clientOnly: true });
@@ -40,8 +40,21 @@
   $.fn.emit = function(_method, _uri, _data) {
     var model = _uri.split("/")[0];
     var _token = token();
-    if ((_method == "CREATE") || (_method == "UPDATE")) {
+    switch(_method) {
+    case "CREATE":
       _data = extract(_data);
+      _uri += "/" + "new";
+      break;
+    case "READ":
+      _uri += "/" + "any";
+      break;
+    case "UPDATE":
+      _data = extract(_data);
+      _uri += "/" + _data._id;
+      break;
+    case "DELETE":
+      _uri += "/" + _data._id;
+      break;
     }
     socket.emit('message', { method: _method, uri: context[model].root + _uri, token: _token, data: _data });
     return $.Deferred(function (promise) {

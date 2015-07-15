@@ -4,16 +4,16 @@ $( function() {
     jqueryuiTheme: true,
     actions: {
       listAction: function(postData, options) {
-        return $(this).emit("READ", "teams/any");
+        return $(this).emit("READ", "teams");
       },
       createAction: function(data) {
-        return $(this).emit("CREATE", "teams/new", data);
+        return $(this).emit("CREATE", "teams", data);
       },
       updateAction: function(data) {
-        return $(this).emit("UPDATE", "teams/" + data._id, data);
+        return $(this).emit("UPDATE", "teams", data);
       },
       deleteAction: function(data){
-        return $(this).emit("DELETE", "teams/" + data._id, data);
+        return $(this).emit("DELETE", "teams", data);
       }
     },
     fields: {
@@ -76,16 +76,16 @@ $( function() {
     },
     actions: {
       listAction: function(postData, options) {
-        return $(this).emit("READ", "players/any");
+        return $(this).emit("READ", "players");
       },
       createAction: function(data) {
-        return $(this).emit("CREATE", "players/new", data);
+        return $(this).emit("CREATE", "players", data);
       },
       updateAction: function(data) {
-        return $(this).emit("UPDATE", "players/" + data._id, data);
+        return $(this).emit("UPDATE", "players", data);
       },
       deleteAction: function(data){
-        return $(this).emit("DELETE", "players/" + data._id, data);
+        return $(this).emit("DELETE", "players", data);
       }
     },
     fields: {
