@@ -6,12 +6,10 @@ $( function() {
       listAction: function(postData, options){
         return $(this).emit("READ", "templates/any");
       },
-      createAction: function(postData) {
-        var data = extract(postData);
+      createAction: function(data) {
         return $(this).emit("CREATE", "templates/new", data);
       },
-      updateAction: function(postData) {
-        var data = extract(postData);
+      updateAction: function(data) {
         return $(this).emit("UPDATE", "templates/" + data._id, data);
       },
       deleteAction: function(data){

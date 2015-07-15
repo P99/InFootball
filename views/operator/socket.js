@@ -40,6 +40,9 @@
   $.fn.emit = function(_method, _uri, _data) {
     var model = _uri.split("/")[0];
     var _token = token();
+    if ((_method == "CREATE") || (_method == "UPDATE")) {
+      _data = extract(_data);
+    }
     socket.emit('message', { method: _method, uri: context[model].root + _uri, token: _token, data: _data });
     return $.Deferred(function (promise) {
       promises[_token] = promise;

@@ -6,12 +6,10 @@ $( function() {
       listAction: function(postData, options) {
         return $(this).emit("READ", "teams/any");
       },
-      createAction: function(postData) {
-        var data = extract(postData);
+      createAction: function(data) {
         return $(this).emit("CREATE", "teams/new", data);
       },
-      updateAction: function(postData) {
-        var data = extract(postData);
+      updateAction: function(data) {
         return $(this).emit("UPDATE", "teams/" + data._id, data);
       },
       deleteAction: function(data){
@@ -80,12 +78,10 @@ $( function() {
       listAction: function(postData, options) {
         return $(this).emit("READ", "players/any");
       },
-      createAction: function(postData) {
-        var data = extract(postData);
+      createAction: function(data) {
         return $(this).emit("CREATE", "players/new", data);
       },
-      updateAction: function(postData) {
-        var data = extract(postData);
+      updateAction: function(data) {
         return $(this).emit("UPDATE", "players/" + data._id, data);
       },
       deleteAction: function(data){
