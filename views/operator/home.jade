@@ -31,8 +31,10 @@ html
           a(href='#tabs-1') Template
         li
           a(href='#tabs-2') Metadata
+        block admin-tab
 
       div#tabs-1
         include template.jade
       div#tabs-2
         include metadata.jade
+      block admin-content

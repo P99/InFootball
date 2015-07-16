@@ -40,8 +40,20 @@ module.exports = function(passport){
 
 	/* GET Home Page */
 	router.get('/home', isAuthenticated, function(req, res){
-		res.render('operator/operator', { user: req.user });
-  //res.render('template');
+  var template = "";
+  switch(req.user.type) {
+  case "Admin":
+		  template = 'admin/home';
+    break;
+  case "Operator":
+    template = 'operator/home';
+    break;
+  default:
+    template = 'home';
+    break;
+  }
+
+  res.render(template, { user: req.user });
 	});
 
 	/* Handle Logout */

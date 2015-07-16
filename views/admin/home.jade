@@ -1,0 +1,10 @@
+extends ../operator/home.jade
+
+if (user.type == "Admin")
+  block admin-tab
+    li
+      a(href='#tabs-3') Users
+
+  block admin-content
+    div#tabs-3
+      include users.jade
