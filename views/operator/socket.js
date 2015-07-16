@@ -22,7 +22,7 @@
     else {
       var model = modelLast(msg.uri);
       var ref = $("#" + model);
-      if((!context[model].root) && (msg.uri.indexOf(context[model].root) >= 0)) {
+      if((context[model].root == "") || (msg.uri.indexOf(context[model].root) >= 0)) {
         switch (msg.method) {
         case "CREATE":
           ref.jtable('addRecord', {record: msg.data, clientOnly: true });
