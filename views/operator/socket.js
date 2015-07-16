@@ -1,13 +1,13 @@
 (function ( $ ) {
-  $.rest = {}; // Create a namspace for this toolkit
-  var socket = io( document.location.hostname + ':' + port + '/operator' );
+  $.rest = {}; // Create a namespace for this toolkit
   var context = {
     teams: { root: "" },
     players: { root: "" },
     templates: { root: ""}
   };
   var promises = {};
-  socket.on('message', function(msg) {
+
+  function namespaceHandler(msg) {
     fixDate(msg.data);
     if (promises[msg.token]) {
       var data = {};
@@ -22,7 +22,7 @@
     }
     else {
       var model = modelLast(msg.uri);
-      var ref = $("#" + model);
+      var ref = context[model].ref;
       if((context[model].root == "") || (msg.uri.indexOf(context[model].root) >= 0)) {
         switch (msg.method) {
         case "CREATE":
@@ -37,37 +37,60 @@
         }
       }
     }
-  });
-  $.rest.emit = function(_method, _uri, _data) {
-    var model = _uri.split("/")[0];
-    var _token = token();
-    switch(_method) {
+  };
+
+  // Begin public functions
+  $.rest.register = function(model, namespace) {
+    context[model] = { 
+      'root': "",
+      'socket': socketForNamespace(namespace),
+      'namespace': namespace,
+      'ref': $('#' + model)
+    };
+  };
+
+  $.rest.emit = function(method, model, data) {
+    var token = tokenGen();
+    var uri;
+    switch(method) {
     case "CREATE":
-      _data = extract(_data);
-      _uri += "/" + "new";
+      data = extract(data);
+      uri = model + "/" + "new";
       break;
     case "READ":
-      _uri += "/" + "any";
+      uri = model + "/" + "any";
       break;
     case "UPDATE":
-      _data = extract(_data);
-      _uri += "/" + _data._id;
+      data = extract(data);
+      uri = model + "/" + data._id;
       break;
     case "DELETE":
-      _uri += "/" + _data._id;
+      uri = model + "/" + data._id;
       break;
     }
-    socket.emit('message', { method: _method, uri: context[model].root + _uri, token: _token, data: _data });
+    context[model].socket.emit('message', { 'method': method, 'uri': context[model].root + uri, 'token': token, 'data': data });
     return $.Deferred(function (promise) {
-      promises[_token] = promise;
+      promises[token] = promise;
     });
   };
+
   $.rest.setRoot = function(model, value) {
     context[model].root = value;
   }
-  //
-  //
+
   // Utility
+  function socketForNamespace(namespace) {
+    for (model in context) {
+      if ((context[model].namespace == namespace) && (context[model].socket)) {
+        return context[model].socket;
+      }
+    }
+
+    var socket = io( document.location.hostname + ':' + port + '/' + namespace);
+    socket.on('message', namespaceHandler);
+    return socket;
+  }
+
   function extract(uri) {
     var data = {}, token;
     var pairs = uri.split("&");
@@ -79,7 +102,7 @@
     return data;
   }
   // Generate a random token
-  function token() {
+  function tokenGen() {
     return Math.random().toString(36).substr(2);
   }
   function modelLast(uri) {

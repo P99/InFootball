@@ -31,5 +31,6 @@ $( function() {
       }
     }
   });
+  $.rest.register("templates", "operator");
   $( "#templates" ).jtable("load", {});
 });

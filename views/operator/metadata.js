@@ -117,5 +117,7 @@ $( function() {
     }
   }).hide(); // End "#players" jtable
 
+  $.rest.register("teams", "operator");
+  $.rest.register("players", "operator");
   $( "#teams" ).jtable("load", {});
 });

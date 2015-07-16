@@ -12,15 +12,16 @@ html
     script(src='/jquery/jquery.jtable.js')
     script(src='/javascript/socket.io.js')
     script
-      | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8000 : 8080;
-      | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
-      | $( function() {
-      |   $( "#tabs" ).tabs();
-      | });
-      include header.js
-      include socket.js
-      include template.js
-      include metadata.js
+      block script
+        | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8000 : 8080;
+        | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
+        | $( function() {
+        |   $( "#tabs" ).tabs();
+        | });
+        include header.js
+        include socket.js
+        include template.js
+        include metadata.js
 
   body
     include header.jade

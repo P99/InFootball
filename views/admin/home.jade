@@ -1,5 +1,8 @@
 extends ../operator/home.jade
 
+append script
+  include users.js
+
 if (user.type == "Admin")
   block admin-tab
     li
@@ -7,4 +10,4 @@ if (user.type == "Admin")
 
   block admin-content
     div#tabs-3
-      include users.jade
+      div#users
