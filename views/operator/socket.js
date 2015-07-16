@@ -1,4 +1,5 @@
 (function ( $ ) {
+  $.rest = {}; // Create a namspace for this toolkit
   var socket = io( document.location.hostname + ':' + port + '/operator' );
   var context = {
     teams: { root: "" },
@@ -37,7 +38,7 @@
       }
     }
   });
-  $.fn.emit = function(_method, _uri, _data) {
+  $.rest.emit = function(_method, _uri, _data) {
     var model = _uri.split("/")[0];
     var _token = token();
     switch(_method) {
@@ -61,7 +62,7 @@
       promises[_token] = promise;
     });
   };
-  $.fn.setRoot = function(model, value) {
+  $.rest.setRoot = function(model, value) {
     context[model].root = value;
   }
   //

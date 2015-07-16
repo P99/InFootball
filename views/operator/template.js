@@ -4,16 +4,16 @@ $( function() {
     jqueryuiTheme: true,
     actions: {
       listAction: function(postData, options){
-        return $(this).emit("READ", "templates");
+        return $.rest.emit("READ", "templates");
       },
       createAction: function(data) {
-        return $(this).emit("CREATE", "templates", data);
+        return $.rest.emit("CREATE", "templates", data);
       },
       updateAction: function(data) {
-        return $(this).emit("UPDATE", "templates", data);
+        return $.rest.emit("UPDATE", "templates", data);
       },
       deleteAction: function(data){
-        return $(this).emit("DELETE", "templates", data);
+        return $.rest.emit("DELETE", "templates", data);
       }
     },
     fields: {

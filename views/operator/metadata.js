@@ -4,16 +4,16 @@ $( function() {
     jqueryuiTheme: true,
     actions: {
       listAction: function(postData, options) {
-        return $(this).emit("READ", "teams");
+        return $.rest.emit("READ", "teams");
       },
       createAction: function(data) {
-        return $(this).emit("CREATE", "teams", data);
+        return $.rest.emit("CREATE", "teams", data);
       },
       updateAction: function(data) {
-        return $(this).emit("UPDATE", "teams", data);
+        return $.rest.emit("UPDATE", "teams", data);
       },
       deleteAction: function(data){
-        return $(this).emit("DELETE", "teams", data);
+        return $.rest.emit("DELETE", "teams", data);
       }
     },
     fields: {
@@ -50,7 +50,7 @@ $( function() {
             label: "edit"
           }).click(function() {
             console.log("Editing team/" + team.record._id + "/players/");
-            $(this).setRoot("players", "teams/" + team.record._id + "/");
+            $.rest.setRoot("players", "teams/" + team.record._id + "/");
             $( "#teams" ).hide("slide", { direction: "left" }, 500);
             $( "#players" ).jtable('load').show("slide", { direction: "right" }, 500);
             $( "#players" ).find('.jtable-title-text').html("Equipes / " + team.record.name + " / Joueurs");
@@ -76,16 +76,16 @@ $( function() {
     },
     actions: {
       listAction: function(postData, options) {
-        return $(this).emit("READ", "players");
+        return $.rest.emit("READ", "players");
       },
       createAction: function(data) {
-        return $(this).emit("CREATE", "players", data);
+        return $.rest.emit("CREATE", "players", data);
       },
       updateAction: function(data) {
-        return $(this).emit("UPDATE", "players", data);
+        return $.rest.emit("UPDATE", "players", data);
       },
       deleteAction: function(data){
-        return $(this).emit("DELETE", "players", data);
+        return $.rest.emit("DELETE", "players", data);
       }
     },
     fields: {
