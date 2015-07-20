@@ -1,6 +1,7 @@
 doctype html
 html
   head
+    meta(charset="utf-8")
     title= 'InFootball'
     link(href='/jquery/jquery-ui.min.css', rel='stylesheet')
     link(href='/jquery/jtable.2.4.0/jtable_jqueryui.css', rel='stylesheet')
@@ -26,16 +27,19 @@ html
   body
     include header.jade
 
-    div#tabs(style={position: "absolute", top: "4em"})
+    div#tabs(style={position: "absolute", top: "4em", width: "98%"})
       ul
         li
           a(href='#tabs-1') Template
         li
           a(href='#tabs-2') Metadata
+        li
+          a(href='#tabs-3') Live
         block admin-tab
 
       div#tabs-1
         include template.jade
       div#tabs-2
         include metadata.jade
+      div#tabs-3 Live content editing
       block admin-content

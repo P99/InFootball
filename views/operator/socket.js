@@ -74,6 +74,26 @@
     });
   };
 
+  $.rest.actions = function(model) {
+    // Internal helper
+    function jtableAction(param) {
+      var _model = param;
+						this.listAction = function(postData, options){
+								return $.rest.emit("READ", _model);
+						};
+						this.createAction = function(data) {
+								return $.rest.emit("CREATE", _model, data);
+						};
+						this.updateAction = function(data) {
+								return $.rest.emit("UPDATE", _model, data);
+						},
+						this.deleteAction = function(data){
+								return $.rest.emit("DELETE", _model, data);
+						};
+    }
+    return new jtableAction(model);
+  }
+
   $.rest.setRoot = function(model, value) {
     context[model].root = value;
   }
