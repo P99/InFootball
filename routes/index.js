@@ -16,7 +16,7 @@ module.exports = function(passport){
 	/* GET login page. */
 	router.get('/', function(req, res) {
     	// Display the Login page with any flash message, if any
-		res.render('index', { message: req.flash('message') });
+		res.render('login/index', { message: req.flash('message') });
 	});
 
 	/* Handle Login POST */
@@ -28,7 +28,7 @@ module.exports = function(passport){
 
 	/* GET Registration Page */
 	router.get('/signup', function(req, res){
-		res.render('register',{message: req.flash('message')});
+		res.render('login/register',{message: req.flash('message')});
 	});
 
 	/* Handle Registration POST */
@@ -37,6 +37,12 @@ module.exports = function(passport){
 		failureRedirect: '/signup',
 		failureFlash : true  
 	}));
+
+	/* Handle Logout */
+	router.get('/signout', function(req, res) {
+		req.logout();
+		res.redirect('/');
+	});
 
 	/* GET Home Page */
 	router.get('/home', isAuthenticated, function(req, res){
@@ -49,17 +55,11 @@ module.exports = function(passport){
     template = 'operator/home';
     break;
   default:
-    template = 'home';
+    template = 'player/home';
     break;
   }
 
   res.render(template, { user: req.user });
-	});
-
-	/* Handle Logout */
-	router.get('/signout', function(req, res) {
-		req.logout();
-		res.redirect('/');
 	});
 
 	return router;

@@ -2,6 +2,7 @@ $( function() {
   $( "#templates" ).jtable({
     title: "Games",
     jqueryuiTheme: true,
+    selecting: true,
     actions: {
       listAction: function(postData, options){
         return $.rest.emit("READ", "templates");
