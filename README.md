@@ -1,8 +1,29 @@
-Welcome to InFootball	
+# Welcome to InFootball
 
-### Getting started
-- [Installation](installation) Step-by-step instructions to get InFootball running on your computer
+Introduction
 
+#### Index:
+- [Installation](#installation): Step-by-step instructions to get InFootball running on your computer
+
+## High level view
+
+Todo: Explain the main functionalities here
+
+## Organization
+
+- models: Describe the objects found in the database
+- passport: Security handling & authentication
+- public: All files from external sources
+- views: A set of .jade templates and pieces of JavaScript
+- server.js: Entry point of the application
+
+## Dependencies
+
+### Node.js packages:
+- Express: Backbone of the web server
+- Passport: Handle authentification (later with Twitter and Facebook)
+- Jade: Allow to template pieces of HTML so they can be re-used across the site
+- Socket.OI: Wrapper against websockets (handles namespaces and rooms)
 
 ## Installation
 
