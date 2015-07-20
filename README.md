@@ -2,14 +2,14 @@
 
 Introduction
 
-#### Index:
-- [Installation](#installation): Step-by-step instructions to get InFootball running on your computer
+### Index:
+- [Installation](#Installation): Step-by-step instructions to get InFootball running on your computer
 
-## High level view
+# High level view
 
 Todo: Explain the main functionalities here
 
-## Organization
+# Organization
 
 - models: Describe the objects found in the database
 - passport: Security handling & authentication
@@ -17,15 +17,15 @@ Todo: Explain the main functionalities here
 - views: A set of .jade templates and pieces of JavaScript
 - server.js: Entry point of the application
 
-## Dependencies
+# Dependencies
 
-### Node.js packages:
+## Node.js packages:
 - Express: Backbone of the web server
 - Passport: Handle authentification (later with Twitter and Facebook)
 - Jade: Allow to template pieces of HTML so they can be re-used across the site
 - Socket.OI: Wrapper against websockets (handles namespaces and rooms)
 
-## Installation
+# Installation
 
 1. Install [Node.js](https://nodejs.org) and Git
 
@@ -36,20 +36,20 @@ Then wait ;-)
 
 3. Clone the repository
 
-```sh
+```
 $ git clone ssh://554fae7e5973ca615500001c@infootball-p99.rhcloud.com/~/git/infootball.git/
 ```
 A new directory called 'infootball' has been created
 
 4. Install InFootball dependancies
 
-```sh
+```
 $ cd infootbal
 $ npm install
 ```
 
 5. Run Node.js web server
-```sh
+```
 $ node server.js
 ```
 
