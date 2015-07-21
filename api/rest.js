@@ -33,7 +33,7 @@ module.exports = function(server) {
               var object = new model(msg.data);
               object.save(function(err) {
                 if (err) {
-                  console.log("err object save");
+                  console.log("err object save: " + JSON.stringify(err));
                   msg.data = "Failed to save " + pair.model;
                 } else {
                   msg.status = "OK";

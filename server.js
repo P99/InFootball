@@ -79,4 +79,5 @@ require('./models/template');
 require('./models/team');
 require('./models/player');
 require('./models/question');
+require('./models/game');
 var restAPI = require('./api/rest')(webServer);

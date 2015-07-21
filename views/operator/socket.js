@@ -11,11 +11,15 @@
     fixDate(msg.data);
     if (promises[msg.token]) {
       var data = {};
-      data["Result"] = "OK";
-      if (msg.data instanceof Array) {
-        data["Records"] = msg.data;
-      } else if (msg.data instanceof Object) {
-        data["Record"] = msg.data;
+      data["Result"] = msg.status;
+      if (msg.status == "OK") {
+        if (msg.data instanceof Array) {
+          data["Records"] = msg.data;
+        } else if (msg.data instanceof Object) {
+          data["Record"] = msg.data;
+        }
+      } else {
+        data["Message"] = msg.data;
       }
       promises[msg.token].resolve(data);
       delete promises[msg.token];
