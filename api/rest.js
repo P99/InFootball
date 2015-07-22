@@ -137,6 +137,9 @@ module.exports = function(server) {
               });
             }
             break;
+          case "JOIN":
+            socket.join(msg.data._id);
+            break;
           default:
             console.log("Unkown method: " + msg.method);
             break;

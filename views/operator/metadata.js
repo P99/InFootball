@@ -27,7 +27,7 @@ $( function() {
           return $('<img src="' + team.record.logo + '"></img>');
         }
       },
-      name: {
+      title: {
         title: "Equipe"
       },
       coach: {
