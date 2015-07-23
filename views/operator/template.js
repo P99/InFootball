@@ -29,13 +29,13 @@ $( function() {
           }).click(function() {
             current = data.record._id;
             $.rest.setRoot("teams", "templates/" + data.record._id + "/");
-            $( "#teams" ).jtable("reload", function() {
+            $( "#teams-selection" ).jtable("reload", function() {
               //Select all rows ???
-              $( "#teams" ).jtable("selectRows", $( "#teams tr"));
+              $( "#teams-selection" ).jtable("selectRows", $( "#teams-selection tr"));
             });
 
             $( "#questions" ).hide();
-            $( "#teams" ).show();
+            $( "#teams-selection" ).show();
           });
           return button;
         }
@@ -53,7 +53,7 @@ $( function() {
             $.rest.setRoot("questions", "templates/" + data.record._id + "/");
             $( "#questions" ).jtable("reload");
 
-            $( "#teams" ).hide();
+            $( "#teams-selection" ).hide();
             $( "#questions" ).show();
           });
           return button;
@@ -91,7 +91,7 @@ $( function() {
     }
   });
 
-  $( "#teams" ).jtable({
+  $( "#teams-selection" ).jtable({
      title: "Selection des équipes:",
      jqueryuiTheme: true,
      selecting: true,
@@ -109,14 +109,14 @@ $( function() {
          click: function () {
            console.log("Selectionner les équipes");
            $.rest.setRoot("teams", "");
-           $( "#teams" ).jtable("reload");
+           $( "#teams-selection" ).jtable("reload");
          }
        },
        {
          text: "Valider",
          click: function () {
            console.log("Valider les équipes");
-           var selectedRows = $('#teams').jtable('selectedRows');
+           var selectedRows = $('#teams-selection').jtable('selectedRows');
            var selectedTeams = [];
            selectedRows.each(function () {
              var record = $(this).data('record');
@@ -126,7 +126,7 @@ $( function() {
            if (selectedTeams.length == 2) {
              $.rest.emit("UPDATE", "templates", { _id: current, teams: selectedTeams }).done(function() {
                $.rest.setRoot("teams", "templates/" + current + "/");
-               $( "#teams" ).jtable("reload");
+               $( "#teams-selection" ).jtable("reload");
              });
            }
          }
@@ -143,19 +143,6 @@ $( function() {
     }
   });
 
-  function loadTeams() {
-    var ref = $( "#teams-select" );
-    $.rest.options("teams").done(function(data) {
-      data.Options.forEach(function (record) {
-        ref.jtable('addRecord', {
-          record: { _id: record.Value, name: record.DisplayText },
-          clientOnly: true
-        });
-        console.log("teams: " + JSON.stringify(record));
-      });
-    });
-  }
-
   $.rest.register("templates", "operator");
   $( "#templates" ).jtable("load", {});
 
@@ -163,6 +150,6 @@ $( function() {
   $( "#questions" ).jtable("load", {});
 
   $.rest.register("teams", "operator");
-  $( "#teams" ).jtable("load", {});
-  $( "#teams" ).hide();
+  $( "#teams-selection" ).jtable("load", {});
+  $( "#teams-selection" ).hide();
 });
