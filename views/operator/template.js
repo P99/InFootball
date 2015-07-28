@@ -53,7 +53,7 @@ $( function() {
             current = data.record._id;
             teams.root = "templates/" + data.record._id + "/";
             $( "#teams-selection" ).jtable("load", {}, function() {
-              $( "#teams-selection" ).jtable("selectRows", $( "#teams-selection tr"));
+              $( "#teams-selection" ).jtable("selectRows", $( "#teams-selection tr.jtable-data-row"));
             });
 
             $( "#questions" ).hide();
@@ -165,6 +165,5 @@ $( function() {
 
   $( "#templates" ).jtable("load", {});
   $( "#questions" ).jtable("load", {});
-  $( "#teams-selection" ).jtable("load", {});
   $( "#teams-selection" ).hide();
 });
