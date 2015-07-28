@@ -1,9 +1,31 @@
 $( function() {
   var current;
+
+  var templates = $.rest({
+    model: "templates",
+    namespace: "operator",
+    ref: $( "#templates" ),
+    type: "jtable"
+  });
+
+  var teams = $.rest({
+    model: "teams",
+    namespace: "operator",
+    ref: $( "#teams-selection" ),
+    type: "jtable"
+  });
+
+  var questions = $.rest({
+    model: "questions", 
+    namespace: "operator",
+    ref: $( "#questions" ),
+    type: "jtable"
+  });
+
   $( "#templates" ).jtable({
     title: "Games",
     jqueryuiTheme: true,
-    actions: $.rest.actions("templates"),
+    actions: templates.actions(),
     fields: {
       _id: {
         key: true,
@@ -28,9 +50,8 @@ $( function() {
             label: "edit"
           }).click(function() {
             current = data.record._id;
-            $.rest.setRoot("teams", "templates/" + data.record._id + "/");
+            teams.root = "templates/" + data.record._id + "/";
             $( "#teams-selection" ).jtable("reload", function() {
-              //Select all rows ???
               $( "#teams-selection" ).jtable("selectRows", $( "#teams-selection tr"));
             });
 
@@ -50,7 +71,7 @@ $( function() {
             icons: { secondary: "ui-icon-triangle-1-e" },
             label: "edit"
           }).click(function() {
-            $.rest.setRoot("questions", "templates/" + data.record._id + "/");
+            questions.root = "templates/" + data.record._id + "/";
             $( "#questions" ).jtable("reload");
 
             $( "#teams-selection" ).hide();
@@ -65,7 +86,7 @@ $( function() {
   $( "#questions" ).jtable({
     title: "Questions:",
     jqueryuiTheme: true,
-    actions: $.rest.actions("questions"),
+    actions: questions.actions(),
     fields: {
       _id: {
         key: true,
@@ -100,7 +121,7 @@ $( function() {
      animationsEnabled: false,
      actions: {
        listAction: function(postData, options) {
-          return $.rest.emit("READ", "teams");
+          return teams.emit("READ");
        }
      },
      toolbar: {
@@ -108,7 +129,7 @@ $( function() {
          text: "Tout afficher",
          click: function () {
            console.log("Selectionner les équipes");
-           $.rest.setRoot("teams", "");
+           teams.root = "";
            $( "#teams-selection" ).jtable("reload");
          }
        },
@@ -124,8 +145,8 @@ $( function() {
            });
 
            if (selectedTeams.length == 2) {
-             $.rest.emit("UPDATE", "templates", { _id: current, teams: selectedTeams }).done(function() {
-               $.rest.setRoot("teams", "templates/" + current + "/");
+             $( "#templates" ).rest("emit", "UPDATE", "templates", { _id: current, teams: selectedTeams }).done(function() {
+               teams.root = "templates/" + current + "/";
                $( "#teams-selection" ).jtable("reload");
              });
            }
@@ -143,13 +164,8 @@ $( function() {
     }
   });
 
-  $.rest.register("templates", "operator");
   $( "#templates" ).jtable("load", {});
-
-  $.rest.register("questions", "operator");
   $( "#questions" ).jtable("load", {});
-
-  $.rest.register("teams", "operator");
   $( "#teams-selection" ).jtable("load", {});
   $( "#teams-selection" ).hide();
 });

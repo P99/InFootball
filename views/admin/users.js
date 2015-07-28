@@ -1,21 +1,16 @@
 $( function() {
+
+  var users = $.rest({
+    model: "users",
+    ref: $( "#users" ),
+    namespace: "admin",
+    type: "jtable"
+  });
+
   $( "#users" ).jtable({
     title: "Users",
     jqueryuiTheme: true,
-    actions: {
-      listAction: function(postData, options) {
-        return $.rest.emit("READ", "users");
-      },
-      createAction: function(data) {
-        return $.rest.emit("CREATE", "users", data);
-      },
-      updateAction: function(data) {
-        return $.rest.emit("UPDATE", "users", data);
-      },
-      deleteAction: function(data){
-        return $.rest.emit("DELETE", "users", data);
-      }
-    },
+    actions: users.actions(),
     fields: {
       _id: {
         key: true,
@@ -44,6 +39,6 @@ $( function() {
       }
     }
   });
-  $.rest.register("users", "admin");
+
   $( "#users" ).jtable("load", {});
 });

@@ -1,5 +1,18 @@
 $( function() {
-  $.rest.register("games", "operator");
+
+  var games = $.rest({
+    model: "games",
+    namespace: "operator",
+    ref: $( "#games" ),
+    type: "jtable"
+  });
+
+  var questions = $.rest({
+    model: "questions",
+    namespace: "operator",
+    ref: $( "#questions-selection" ),
+    type: "jtable"
+  });
 
   // Load async options for template field
   $.rest.options("templates").done(function(templates) {
@@ -7,7 +20,7 @@ $( function() {
     $( "#games" ).jtable({
       title: "En cours...",
       jqueryuiTheme: true,
-      actions: $.rest.actions("games"),
+      actions: games.actions(),
       fields: {
         _id: {
           key: true,
@@ -58,8 +71,18 @@ $( function() {
               label: "Rejoindre"
             }).click(function() {
               console.log("Join game: " + data.record._id);
-              $.rest.emit("JOIN", "games", data.record);
+              games.emit("JOIN", data.record);
+
+              // Todo retreive data about teams ftom the template ID
+              // ie: $.rest.emit("READ", "templates/" + data.record.template );
+              // But the call is asynchrnous and also READ only implements list queries
+              $( "#game-toolbar" ).html("Match XXXX - " + data.record.status);
+
+              questions.root = "templates/" + data.record.template + "/";
+              $("#questions-selection").jtable('load');
+
               $( "#games" ).hide();
+              $( "#questions-selection" ).show();
             });
             return $button;
           }
@@ -68,5 +91,27 @@ $( function() {
     });
 
     $( "#games" ).jtable("load", {});
-  });
+  }); // End loading templates option
+  
+  $( "#questions-selection" ).jtable({
+      title: "Sélection des questions",
+      jqueryuiTheme: true,
+      selecting: true,
+      actions: {
+        listAction: function(postData, options) {
+          console.log("list actions questions");
+          return questions.emit("READ");
+        }
+      },
+      fields: {
+        _id: {
+          key: true,
+          list: false
+        },
+        caption: {
+          title: "Intitulé"
+        }
+      }
+  }).hide();
+
 });
