@@ -179,10 +179,12 @@
   }
   // Fixing date
   function fixDate(data) {
-    if (data instanceof Array) {
-      data.forEach(fix);
-    } else {
-      fix(data);
+    if (data) {
+      if (data instanceof Array) {
+        data.forEach(fix);
+      } else {
+        fix(data);
+      }
     }
     function fix (record) {
       if (record.date) {

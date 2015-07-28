@@ -83,7 +83,6 @@ module.exports = function(server) {
                     model = mongoose.models[child];
                     model.find({_id: { $in: doc[child] }}, function( err, children ) {
                       if (!err) {
-                        console.log("Players: " + JSON.stringify(children));
                         msg.status = "OK";
                         msg.data = children;
                       }

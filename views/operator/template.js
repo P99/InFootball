@@ -25,6 +25,7 @@ $( function() {
   $( "#templates" ).jtable({
     title: "Games",
     jqueryuiTheme: true,
+    selecting: true,
     actions: templates.actions(),
     fields: {
       _id: {
@@ -51,7 +52,7 @@ $( function() {
           }).click(function() {
             current = data.record._id;
             teams.root = "templates/" + data.record._id + "/";
-            $( "#teams-selection" ).jtable("reload", function() {
+            $( "#teams-selection" ).jtable("load", {}, function() {
               $( "#teams-selection" ).jtable("selectRows", $( "#teams-selection tr"));
             });
 
@@ -128,15 +129,13 @@ $( function() {
        items: [{
          text: "Tout afficher",
          click: function () {
-           console.log("Selectionner les équipes");
            teams.root = "";
-           $( "#teams-selection" ).jtable("reload");
+           $( "#teams-selection" ).jtable("load");
          }
        },
        {
          text: "Valider",
          click: function () {
-           console.log("Valider les équipes");
            var selectedRows = $('#teams-selection').jtable('selectedRows');
            var selectedTeams = [];
            selectedRows.each(function () {
