@@ -145,7 +145,7 @@ $( function() {
            });
 
            if (selectedTeams.length == 2) {
-             $( "#templates" ).rest("emit", "UPDATE", "templates", { _id: current, teams: selectedTeams }).done(function() {
+             templates.emit("UPDATE", { _id: current, teams: selectedTeams }).done(function() {
                teams.root = "templates/" + current + "/";
                $( "#teams-selection" ).jtable("reload");
              });
