@@ -24,7 +24,6 @@
 
     client.emit = emit;
     client.actions = actions;
-    //client.options = options;
     return client;
   }
 
@@ -33,7 +32,7 @@
     if (pending[msg.token]) {
       var data = {};
       data["Result"] = msg.status;
-      switch (pending[msg.token].type) {
+      switch (pending[msg.token].client.type) {
       case "jtable":
         if (msg.status == "OK") {
           if (msg.data instanceof Array) {
@@ -60,31 +59,54 @@
         break;
       }
       pending[msg.token].promise.resolve(data);
-      delete pending[msg.token];
     }
-    else {
-      var model = modelLast(msg.uri);
-      context[model].clients.forEach(function(client) {
-        ref = client.ref;
-        if((client.root == "") || (msg.uri.indexOf(client.root) >= 0)) {
-          switch (msg.method) {
-          case "CREATE":
-            ref.jtable('addRecord', {record: msg.data, clientOnly: true });
-            break;
-          case "UPDATE":
-            ref.jtable('updateRecord', {record: msg.data, clientOnly: true });
-            break;
-          case "DELETE":
-            ref.jtable('deleteRecord', {key: msg.data._id, clientOnly: true });
-            break;
+
+    var model = modelLast(msg.uri);
+    context[model].clients.forEach(function(client) {
+      if (!pending[msg.token] ||
+         (pending[msg.token] && (pending[msg.token].client !== client))) {
+        switch(client.type) {
+        case "jtable":
+          if((client.root == "") || (msg.uri.indexOf(client.root) >= 0)) {
+            switch (msg.method) {
+            case "CREATE":
+              client.ref.jtable('addRecord', {record: msg.data, clientOnly: true });
+              break;
+            case "UPDATE":
+              client.ref.jtable('updateRecord', {record: msg.data, clientOnly: true });
+              break;
+            case "DELETE":
+              client.ref.jtable('deleteRecord', {key: msg.data._id, clientOnly: true });
+              break;
+            }
           }
+          break;
+        case "options":
+          // At this stage we know something has changed
+          // But we need the full data anyway
+          if (typeof client.ref == "function") {
+            client.emit("READ").done(function(data) {
+              client.ref(data);
+            });
+          }
+          break;
+        default:
+          console.log("Client type " + client.type + " not supported");
+          break;
         }
-      });
+      }
+    }); // End foreach client
+
+    // cleanup
+    if (pending[msg.token]) {
+      delete pending[msg.token];
     }
   };
 
+  // Client interface
   function emit(method, record) {
-    console.log("[emit] " + method + " " + this.model)
+    var client = this;
+    console.log("[emit] " + method + " " + client.model)
     var token = tokenGen();
     var uri;
     if (typeof record == "string") {
@@ -92,24 +114,26 @@
     }
     switch(method) {
     case "CREATE":
-      uri = this.model + "/" + "new";
+      uri = client.model + "/" + "new";
       break;
     case "READ":
-      uri = this.model + "/" + "any";
+      uri = client.model + "/" + "any";
       break;
     case "UPDATE":
     case "DELETE":
     case "JOIN":
-      uri = this.model + "/" + record._id;
+      uri = client.model + "/" + record._id;
       break;
     }
-    context[this.model].socket.emit('message', { 'method': method, 'uri': this.root + uri, 'token': token, 'data': record });
-    console.log("Sending: " + method + " " + (this.root + uri) + " token:" + token + " record: " + record);
+    context[client.model].socket.emit('message', { 'method': method, 'uri': client.root + uri, 'token': token, 'data': record });
+    console.log("Sending: " + method + " " + (client.root + uri) + " token:" + token + " record: " + record);
     return $.Deferred(function (deferred) {
-      pending[token] = { promise: deferred, type: "jtable" };
+      pending[token] = { 'promise': deferred, 'client': client };
     });
   };
 
+  // Client interface
+  // Shortcut to register all actions for jtable
   function actions() {
     // Internal helper
     function jtableAction(param) {

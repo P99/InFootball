@@ -1,4 +1,5 @@
 $( function() {
+  var optionsTemplates;
 
   var games = $.rest({
     model: "games",
@@ -14,8 +15,16 @@ $( function() {
     type: "jtable"
   });
 
+  var templates = $.rest({
+    model: "templates",
+    namespace: "operator",
+    ref: function(data) { optionsTemplates = data; },
+    type: "options"
+  });
+
   // Load async options for template field
-  $.rest.options("templates").done(function(templates) {
+  templates.emit("READ").done(function(data) {
+    optionsTemplates = data;
 
     $( "#games" ).jtable({
       title: "En cours...",
@@ -60,7 +69,7 @@ $( function() {
         },
         template: {
           title: "Modèle",
-          options: function(data) { return templates.Options; }
+          options: function(data) { return optionsTemplates.Options; }
         },
         action: {
           title: "Action",
@@ -73,7 +82,7 @@ $( function() {
               console.log("Join game: " + data.record._id);
               games.emit("JOIN", data.record);
 
-              // Todo retreive data about teams ftom the template ID
+              // Todo retreive data about teams from the template ID
               // ie: $.rest.emit("READ", "templates/" + data.record.template );
               // But the call is asynchrnous and also READ only implements list queries
               $( "#game-toolbar" ).html("Match XXXX - " + data.record.status);
