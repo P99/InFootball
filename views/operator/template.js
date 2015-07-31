@@ -22,7 +22,7 @@ $( function() {
     type: "jtable"
   });
 
-  $( "#templates" ).jtable({
+  templates.ref.jtable({
     title: "Games",
     jqueryuiTheme: true,
     selecting: true,
@@ -50,14 +50,13 @@ $( function() {
             icons: { secondary: "ui-icon-triangle-1-e" },
             label: "edit"
           }).click(function() {
-            current = data.record._id;
             teams.root = "templates/" + data.record._id + "/";
-            $( "#teams-selection" ).jtable("load", {}, function() {
-              $( "#teams-selection" ).jtable("selectRows", $( "#teams-selection tr.jtable-data-row"));
+            teams.ref.jtable("load", {}, function() {
+              teams.ref.jtable("selectRows", $( "#teams-selection tr.jtable-data-row"));
             });
 
-            $( "#questions" ).hide();
-            $( "#teams-selection" ).show();
+            questions.ref.hide();
+            teams.ref.show();
           });
           return button;
         }
@@ -73,21 +72,56 @@ $( function() {
             label: "edit"
           }).click(function() {
             questions.root = "templates/" + data.record._id + "/";
-            $( "#questions" ).jtable("reload");
-
-            $( "#teams-selection" ).hide();
-            $( "#questions" ).show();
+            questions.ref.jtable("load", {}, function() {
+              questions.ref.jtable("selectRows", $( "#questions tr.jtable-data-row"));
+            });
+            teams.ref.hide();
+            questions.ref.show();
           });
           return button;
         }
       }
+    },
+    selectionChanged: function(event, data) {
+      var selected = templates.ref.jtable('selectedRows');
+      if (selected.length) {
+        current = $(selected[0]).data('record')._id;
+      }
     }
   });
 
-  $( "#questions" ).jtable({
+  questions.ref.jtable({
     title: "Questions:",
     jqueryuiTheme: true,
+    selecting: true,
+    multiselect: true,
+    selectingCheckboxes: true,
     actions: questions.actions(),
+    toolbar: {
+      items: [{
+        text: "Tout afficher",
+        click: function () {
+          questions.root = "";
+          questions.ref.jtable("load");
+        }
+      },
+      {
+        text: "Valider",
+        click: function () {
+          var selectedRows = questions.ref.jtable('selectedRows');
+          var selection = [];
+          selectedRows.each(function () {
+            var record = $(this).data('record');
+            selection.push(record._id);
+          });
+
+          templates.emit("UPDATE", { _id: current, questions: selection }).done(function() {
+            questions.root = "templates/" + current + "/";
+            questions.ref.jtable("reload");
+          });
+        }
+      }]
+    },
     fields: {
       _id: {
         key: true,
@@ -113,7 +147,7 @@ $( function() {
     }
   });
 
-  $( "#teams-selection" ).jtable({
+  teams.ref.jtable({
      title: "Selection des équipes:",
      jqueryuiTheme: true,
      selecting: true,
@@ -130,13 +164,13 @@ $( function() {
          text: "Tout afficher",
          click: function () {
            teams.root = "";
-           $( "#teams-selection" ).jtable("load");
+           teams.ref.jtable("load");
          }
        },
        {
          text: "Valider",
          click: function () {
-           var selectedRows = $('#teams-selection').jtable('selectedRows');
+           var selectedRows = teams.ref.jtable('selectedRows');
            var selectedTeams = [];
            selectedRows.each(function () {
              var record = $(this).data('record');
@@ -146,7 +180,7 @@ $( function() {
            if (selectedTeams.length == 2) {
              templates.emit("UPDATE", { _id: current, teams: selectedTeams }).done(function() {
                teams.root = "templates/" + current + "/";
-               $( "#teams-selection" ).jtable("reload");
+               teams.ref.jtable("reload");
              });
            }
          }
@@ -163,7 +197,7 @@ $( function() {
     }
   });
 
-  $( "#templates" ).jtable("load", {});
-  $( "#questions" ).jtable("load", {});
-  $( "#teams-selection" ).hide();
+  templates.ref.jtable("load", {});
+  questions.ref.jtable("load", {});
+  teams.ref.hide();
 });
