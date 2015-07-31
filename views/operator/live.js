@@ -82,10 +82,19 @@ $( function() {
               console.log("Join game: " + data.record._id);
               games.emit("JOIN", data.record);
 
-              // Todo retreive data about teams from the template ID
-              // ie: $.rest.emit("READ", "templates/" + data.record.template );
+              // Todo: retreive data about teams from the template ID
               // But the call is asynchrnous and also READ only implements list queries
-              $( "#game-toolbar" ).html("Match XXXX - " + data.record.status);
+              // Should add a 'recursive' options ( games > template > teams )
+              $( "#game-toolbar" ).append('div').html("Match XXXX - " + data.record.status);
+              $( "#game-toolbar" ).append($('<button />').button({
+                  label: "Quitter"
+                }).click(function() {
+                  games.emit("LEAVE", data.record);
+                  games.ref.show();
+                  questions.ref.hide();
+                  $( "#game-toolbar" ).empty();
+                })
+              );
 
               questions.root = "templates/" + data.record.template + "/";
               questions.ref.jtable('load');
