@@ -26,7 +26,7 @@ $( function() {
   templates.emit("READ").done(function(data) {
     optionsTemplates = data;
 
-    $( "#games" ).jtable({
+    games.ref.jtable({
       title: "En cours...",
       jqueryuiTheme: true,
       actions: games.actions(),
@@ -88,10 +88,10 @@ $( function() {
               $( "#game-toolbar" ).html("Match XXXX - " + data.record.status);
 
               questions.root = "templates/" + data.record.template + "/";
-              $("#questions-selection").jtable('load');
+              questions.ref.jtable('load');
 
-              $( "#games" ).hide();
-              $( "#questions-selection" ).show();
+              games.ref.hide();
+              questions.ref.show();
             });
             return $button;
           }
@@ -99,10 +99,10 @@ $( function() {
       }
     });
 
-    $( "#games" ).jtable("load", {});
+    games.ref.jtable("load", {});
   }); // End loading templates option
   
-  $( "#questions-selection" ).jtable({
+  questions.ref.jtable({
       title: "Sélection des questions",
       jqueryuiTheme: true,
       selecting: true,
