@@ -14,19 +14,74 @@
         'clients': []
       };
     }
-    var client = {
-      'ref': options.ref,
-      'model': options.model,
-      'type': options.type,
-      'root': ""
-    }
+    var client = new clientInterface();
+    $.extend(client, options);
+
     context[options.model].clients.push(client);
 
-    client.emit = emit;
-    client.actions = actions;
     return client;
   }
 
+  // Client interface
+  function clientInterface() {
+    // default values for properties
+    this.ref = undefined;
+    this.model = "";
+    this.type = "";
+    this.root = "";
+
+    this.emit = function(method, record) {
+      var client = this;
+      console.log("[emit] " + method + " " + client.model)
+      var token = tokenGen();
+      var uri;
+      if (typeof record == "string") {
+        record = extract(record);
+      }
+      switch(method) {
+      case "CREATE":
+        uri = client.model + "/" + "new";
+        break;
+      case "READ":
+        uri = client.model + "/" + "any";
+        break;
+      case "UPDATE":
+      case "DELETE":
+      case "JOIN":
+        uri = client.model + "/" + record._id;
+        break;
+      }
+      context[client.model].socket.emit('message', { 'method': method, 'uri': client.root + uri, 'token': token, 'data': record });
+      console.log("Sending: " + method + " " + (client.root + uri) + " token:" + token + " record: " + record);
+      return $.Deferred(function (deferred) {
+        pending[token] = { 'promise': deferred, 'client': client };
+      });
+    };
+
+    // Shortcut to register all actions for jtable
+    this.actions = function() {
+      // Internal helper
+      function jtableAction(param) {
+        var client = param;
+						  this.listAction = function(postData, options){
+								  return client.emit("READ");
+						  };
+						  this.createAction = function(record) {
+								  return client.emit("CREATE", record);
+						  };
+						  this.updateAction = function(record) {
+								  return client.emit("UPDATE", record);
+						  },
+						  this.deleteAction = function(record){
+								  return client.emit("DELETE", record);
+						  };
+      }
+      return new jtableAction(this);
+    };
+  }
+
+  // Socket handler for each namespace
+  // Receiving data for Socket.IO and dispatching to clients
   function namespaceHandler(msg) {
     fixDate(msg.data);
     if (pending[msg.token]) {
@@ -103,66 +158,6 @@
     }
   };
 
-  // Client interface
-  function emit(method, record) {
-    var client = this;
-    console.log("[emit] " + method + " " + client.model)
-    var token = tokenGen();
-    var uri;
-    if (typeof record == "string") {
-      record = extract(record);
-    }
-    switch(method) {
-    case "CREATE":
-      uri = client.model + "/" + "new";
-      break;
-    case "READ":
-      uri = client.model + "/" + "any";
-      break;
-    case "UPDATE":
-    case "DELETE":
-    case "JOIN":
-      uri = client.model + "/" + record._id;
-      break;
-    }
-    context[client.model].socket.emit('message', { 'method': method, 'uri': client.root + uri, 'token': token, 'data': record });
-    console.log("Sending: " + method + " " + (client.root + uri) + " token:" + token + " record: " + record);
-    return $.Deferred(function (deferred) {
-      pending[token] = { 'promise': deferred, 'client': client };
-    });
-  };
-
-  // Client interface
-  // Shortcut to register all actions for jtable
-  function actions() {
-    // Internal helper
-    function jtableAction(param) {
-      var client = param;
-						this.listAction = function(postData, options){
-								return client.emit("READ");
-						};
-						this.createAction = function(record) {
-								return client.emit("CREATE", record);
-						};
-						this.updateAction = function(record) {
-								return client.emit("UPDATE", record);
-						},
-						this.deleteAction = function(record){
-								return client.emit("DELETE", record);
-						};
-    }
-    return new jtableAction(this);
-  }
-
-  $.rest.options = function (model) {
-    var token = tokenGen();
-    //context[this.model].socket.emit('message', { 'method': "READ", 'uri': this.model, 'token': token, 'data': null });
-    context[model].socket.emit('message', { 'method': "READ", 'uri': model, 'token': token, 'data': null });
-    return $.Deferred(function (deferred) {
-      pending[token] = { promise: deferred, type: "options" };
-    });
-  }
-
   // Utility
   function socketForNamespace(namespace) {
     console.log("socketForNamespace: " + namespace);
@@ -179,8 +174,8 @@
     return socket;
   }
 
+  // Parse URI encoded data into an object
   function extract(uri) {
-    console.log("extract: " + uri);
     var data = {}, token;
     var pairs = uri.split("&");
     var decode = "";
@@ -190,10 +185,13 @@
     });
     return data;
   }
+
   // Generate a random token
   function tokenGen() {
     return Math.random().toString(36).substr(2);
   }
+
+  // Retreive the last model name seen in the URI
   function modelLast(uri) {
     var tmp = uri.split("/");
     var len = tmp.length;
@@ -201,6 +199,7 @@
     console.log("Model: uri=" + uri + " > " + model);
     return model;
   }
+
   // Fixing date
   function fixDate(data) {
     if (data) {
