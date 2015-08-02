@@ -7,7 +7,8 @@ var Schema = mongoose.Schema({
   duration: Number,
   status: String,
   template: ObjectId,
-  history: [ObjectId]
+  users: [ObjectId],
+  questions: [ObjectId]
 });
 
 Schema.statics.namespace = function() {
