@@ -8,7 +8,7 @@ $( function() {
   });
 
   $( "#users" ).jtable({
-    title: "Users",
+    title: "Utilisateurs",
     jqueryuiTheme: true,
     actions: users.actions(),
     fields: {

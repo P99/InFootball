@@ -23,7 +23,7 @@ $( function() {
   });
 
   templates.ref.jtable({
-    title: "Games",
+    title: "References",
     jqueryuiTheme: true,
     selecting: true,
     actions: templates.actions(),
@@ -33,23 +33,22 @@ $( function() {
         list: false
       },
       title: {
-        title: "Affiche"
+        title: "Affiche",
+        width: "60%"
       },
       date: {
         type: "date",
         title: "Date",
-        displayFormat: "yy-mm-dd"
+        displayFormat: "yy-mm-dd",
+        width: "30%"
       },
       teams: {
-        title: "Equipes",
+        title: "E.",
         edit: false,
         create: false,
         display: function (data) {
-          var button = $("<button/>");
-          button.button({ 
-            icons: { secondary: "ui-icon-triangle-1-e" },
-            label: "edit"
-          }).click(function() {
+          var img = $("<img src='assets/teams.png' />");
+          img.click(function() {
             teams.root = "templates/" + data.record._id + "/";
             teams.ref.jtable("load", {}, function() {
               teams.ref.jtable("selectRows", $( "#teams-selection tr.jtable-data-row"));
@@ -58,19 +57,16 @@ $( function() {
             questions.ref.hide();
             teams.ref.show();
           });
-          return button;
+          return img;
         }
       },
       questions: {
-        title: "Questions",
+        title: "Q.",
         edit: false,
         create: false,
         display: function (data) {
-          var button = $("<button/>");
-          button.button({ 
-            icons: { secondary: "ui-icon-triangle-1-e" },
-            label: "edit"
-          }).click(function() {
+          var img = $("<img src='assets/questions.png' />");
+          img.click(function() {
             questions.root = "templates/" + data.record._id + "/";
             questions.ref.jtable("load", {}, function() {
               questions.ref.jtable("selectRows", $( "#questions tr.jtable-data-row"));
@@ -78,7 +74,7 @@ $( function() {
             teams.ref.hide();
             questions.ref.show();
           });
-          return button;
+          return img;
         }
       }
     },
