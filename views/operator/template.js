@@ -43,7 +43,6 @@ $( function() {
         width: "30%"
       },
       teams: {
-        title: "E.",
         edit: false,
         create: false,
         display: function (data) {
@@ -61,7 +60,6 @@ $( function() {
         }
       },
       questions: {
-        title: "Q.",
         edit: false,
         create: false,
         display: function (data) {
