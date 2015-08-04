@@ -81,6 +81,8 @@ $( function() {
         },
         action: {
           title: "Action",
+          edit: false,
+          create: false,
           display: function(data) {
             var $button = $('<button />');
             $button.button({ 
