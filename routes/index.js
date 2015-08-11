@@ -8,14 +8,23 @@ var isAuthenticated = function (req, res, next) {
 	if (req.isAuthenticated())
 		return next();
 	// if the user is not authenticated then redirect him to the login page
-	res.redirect("https://" + req.headers.host + '/');
+	res.redirect('/');
 }
 
 module.exports = function(passport){
 
+ // Redirect everything to HTTPS
+ router.get('*', function(req, res, next) {
+   if (!req.secure && (req.headers.host.indexOf('localhost') < 0)) {
+     res.redirect("https://" + req.headers.host + req.url);
+   } else {
+     next();
+   }
+ });
+
 	/* GET login page. */
 	router.get('/', function(req, res) {
-    	// Display the Login page with any flash message, if any
+  // Display the Login page with any flash message, if any
 		res.render('login/index', { message: req.flash('message') });
 	});
 
