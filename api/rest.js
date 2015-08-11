@@ -147,11 +147,10 @@ module.exports = function(server) {
           function reply(message) {
             if ((message.status == "OK") && (message.method !== "READ")) {
               console.log("Reply all");
-              handler.emit('message', message);
-            } else {
-              console.log("Reply one");
-              socket.emit('message', message);
-            }
+              socket.broadcast.emit('message', message);
+            } 
+            console.log("Reply one");
+            socket.emit('message', message);
           }
 
         }); // End handling 'message' event
