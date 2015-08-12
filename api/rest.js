@@ -1,27 +1,22 @@
-var io = require('socket.io');
+
 var mongoose = require('mongoose');
 
-module.exports = function(server) {
-    var socketIO = io(server);
-    var names = {};
-    for (var name in mongoose.models) {
-      console.log("Mongosse models: " + name);
-      names[mongoose.models[name].namespace()] = true;
-    } // End for each Mongoose model
-    Object.keys(names).forEach(function(key) {
-      console.log("Socket.IO namespaces: " + key);
-      createNameSpace(key);
-    });
-
-    function createNameSpace(name) {
-      var handler = socketIO.of(name);
-      handler.on('connection', function (socket) {
-        socket.on('message', function(msg) {
+module.exports = function(namespace, io, socket, msg) {
 
           // Todo: refactoring
           var pairs = parseUri(msg.uri);
           var pair = pairs.pop();
           var model = mongoose.models[pair.model];
+
+          // Security check namespace
+          if (!mongoose.models[pair.model]) {
+            console.log("Un-handled model: " + pair.model);
+            return;
+          }
+          if (mongoose.models[pair.model].namespace() != namespace) {
+            console.log("Model " + pair.model + " does not belong to namespace " + namespace);
+            return;
+          }
 
           msg.status = "ERROR"; // Defaults to error
           console.log("[" + pair.model + "] " + msg.method + " " + msg.uri);
@@ -136,9 +131,6 @@ module.exports = function(server) {
               });
             }
             break;
-          case "JOIN":
-            socket.join(msg.data._id);
-            break;
           default:
             console.log("Unkown method: " + msg.method);
             break;
@@ -147,21 +139,13 @@ module.exports = function(server) {
           function reply(message) {
             if ((message.status == "OK") && (message.method !== "READ")) {
               console.log("Reply all");
-              socket.broadcast.emit('message', message);
+              socket.broadcast.emit('rest', message);
             } 
             console.log("Reply one");
-            socket.emit('message', message);
+            socket.emit('rest', message);
           }
 
-        }); // End handling 'message' event
-
-        socket.on('disconnect', function() {
-          console.log("[" + name + "] user disconnected");
-        });
-
-      }); // End namespace connection
-
-    } // End createNode function
+        };
 
   // Helper to replace findOneAndUpdate
   // because the setters don't get called otherwise
@@ -192,4 +176,3 @@ module.exports = function(server) {
     }
     return result;
   }
-}

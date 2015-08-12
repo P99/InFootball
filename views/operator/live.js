@@ -1,6 +1,5 @@
 $( function() {
   var optionsTemplates;
-  var currentGame;
 
   var games = $.rest({
     model: "games",
@@ -23,12 +22,10 @@ $( function() {
     type: "jtable"
   });
 
-  var history = $.rest({
-    model: "questions",
+  var game = $.football({
     namespace: "operator",
-    ref: $( "#question-editor" ),
-    type: "jtable"
-  }); 
+    ref: $( "#question-editor" )
+  });
 
   // Load async options for template field
   templates.emit("READ").done(function(data) {
@@ -90,8 +87,7 @@ $( function() {
               label: "Rejoindre"
             }).click(function() {
               console.log("Join game: " + data.record._id);
-              currentGame = data.record;
-              games.emit("JOIN", data.record);
+              game.join(data.record._id);
 
               // Todo: retreive data about teams from the template ID
               // But the call is asynchrnous and also READ only implements list queries
@@ -100,10 +96,9 @@ $( function() {
               $( "#game-toolbar" ).append($('<button />').button({
                   label: "Quitter"
                 }).click(function() {
-                  games.emit("LEAVE", data.record);
+                  game.leave();
 
                   questions.ref.hide();
-                  history.ref.hide();
                   $( "#game-toolbar" ).empty();
                   games.ref.show();
                 })
@@ -112,12 +107,8 @@ $( function() {
               questions.root = "templates/" + data.record.template + "/";
               questions.ref.jtable('load');
 
-              history.root = "games/" + currentGame._id + "/";
-              history.ref.jtable('load');
-
               games.ref.hide();
               questions.ref.show();
-              history.ref.show();
             });
             return $button;
           }
@@ -155,42 +146,10 @@ $( function() {
               icons: { secondary: "ui-icon-triangle-1-e" },
               label: "Envoyer"
             }).click(function() {
-              //if (!(currentGame.questions instanceof Array)) {
-              //  currentGame.questions = [];
-              //}
-              //currentGame.questions.push(data.record._id);
-              //games.emit("UPDATE", currentGame);
-              var copy = $.extend({}, data.record);
-              delete copy._id; // Because MongoDB should assign a new ID for this Object
-
-              //history.emit("CREATE", copy);
-              var sav = questions.root;
-              questions.root = "games/" + currentGame._id + "/";
-              questions.emit("CREATE", copy);
-              questions.root = sav;
+              game.select(data.record._id);
             });
             return $button;
           }
-        }
-      }
-  }).hide();
-
-  history.ref.jtable({
-      title: "En attente:",
-      jqueryuiTheme: true,
-      selecting: true,
-      actions: {
-        listAction: function(postData, options) {
-          return history.emit("READ");
-        }
-      },
-      fields: {
-        _id: {
-          key: true,
-          list: false
-        },
-        caption: {
-          title: "Intitulé"
         }
       }
   }).hide();
