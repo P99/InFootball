@@ -19,9 +19,9 @@ html
     script(src='/jquery/jtable.2.4.0/localization/jquery.jtable.fr.js')
     script(src='/jquery/jquery.datetimepicker.js')
     script(src='/javascript/socket.io.js')
+    script(src='/javascript/utility.js')
     script
       block script
-        | var port = (document.location.hostname.indexOf('rhcloud.com') > 0 ) ? 8443 : 8080;
         | console.log("Running on openshift: " + (document.location.hostname.indexOf('rhcloud.com') > 0 ));
         | $( function() {
         |   $( "#tabs" ).tabs();

@@ -12,7 +12,7 @@
     }
 
     console.log("socketForNamespace: " + namespace + " > new");
-    var socket = io( document.location.hostname + ':' + port + '/' + namespace);
+    var socket = io( document.location.hostname + ':' + webSocketPort() + '/' + namespace);
 
     socket.on('rest', $.rest.handler);
     socket.on('football', $.football.handler);
