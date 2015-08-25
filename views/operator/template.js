@@ -126,12 +126,10 @@ $( function() {
       },
       type: {
         title: "Type",
-        type: "radiobutton",
         options: ["Oui/Non", "Multiple"]
       },
       status: {
         title: "Statut",
-        type: "radiobutton",
         options: ["Chaud", "Froid"]
       },
       difficulty: {
