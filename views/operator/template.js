@@ -122,7 +122,22 @@ $( function() {
         list: false
       },
       caption: {
-        title: "Intitulé"
+        title: "Intitulé",
+        input: function(data) {
+          var content = $('<div>');
+          var editable = $('<div contenteditable>');
+          var placeholder = $('<input>').hide();
+
+          if (data.record) {
+            editable.html(data.record.caption);
+          }
+          editable.attr('id', 'question_editor');
+
+          placeholder.attr('type', 'text');
+          placeholder.attr('name', 'caption');
+
+          return content.append(editable, placeholder).html();
+        }
       },
       type: {
         title: "Type",
@@ -136,6 +151,10 @@ $( function() {
         title: "Difficulté",
         options: {"1": "Facile", "2": "Moyen", "3": "Difficile"}
       }
+    },
+    formSubmitting: function(event, data) {
+      // Copy over the content of editable div to the hidden input form
+      data.form.find('input[name="caption"]').attr('value', $('#question_editor').html());
     }
   });
 
