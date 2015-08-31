@@ -126,17 +126,24 @@ $( function() {
         input: function(data) {
           var content = $('<div>');
           var editable = $('<div contenteditable>');
+          var toolbar = $('<div>');
           var placeholder = $('<input>').hide();
 
           if (data.record) {
             editable.html(data.record.caption);
           }
-          editable.attr('id', 'question_editor');
+          editable.attr('id', 'question-editor');
+          
+          var link = $('<div>');
+          link.attr('id', 'question-link');
+          link.attr('class', 'ui-state-default');
+          link.append($('<span>').attr('class', 'ui-icon ui-icon-link'));
+          toolbar.append(link);
 
           placeholder.attr('type', 'text');
           placeholder.attr('name', 'caption');
 
-          return content.append(editable, placeholder).html();
+          return content.append(toolbar, editable, placeholder).html();
         }
       },
       type: {
@@ -152,9 +159,23 @@ $( function() {
         options: {"1": "Facile", "2": "Moyen", "3": "Difficile"}
       }
     },
+    formCreated: function(event, data) {
+      var link = data.form.find('#question-link');
+      link.click(function() {
+        // Todo: Show a dialog to select metadata
+        // drop-down: [Model] Game | Team | Player
+        // drop-down: [Field] Caption | Name | etc
+        // drop-down: [Condition] Equals | Not equal | Contains
+        // textfield: with suggestion
+        console.log("Show metadata dialog here");
+      });
+      link.hover(function() {
+        $(this).toggleClass('ui-state-hover');
+      });
+    },
     formSubmitting: function(event, data) {
       // Copy over the content of editable div to the hidden input form
-      data.form.find('input[name="caption"]').attr('value', $('#question_editor').html());
+      data.form.find('input[name="caption"]').attr('value', $('#question-editor').html());
     }
   });
 
