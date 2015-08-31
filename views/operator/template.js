@@ -124,26 +124,16 @@ $( function() {
       caption: {
         title: "Intitulé",
         input: function(data) {
-          var content = $('<div>');
-          var editable = $('<div contenteditable>');
-          var toolbar = $('<div>');
-          var placeholder = $('<input>').hide();
-
-          if (data.record) {
-            editable.html(data.record.caption);
-          }
-          editable.attr('id', 'question-editor');
-          
-          var link = $('<div>');
-          link.attr('id', 'question-link');
-          link.attr('class', 'ui-state-default');
-          link.append($('<span>').attr('class', 'ui-icon ui-icon-link'));
-          toolbar.append(link);
-
-          placeholder.attr('type', 'text');
-          placeholder.attr('name', 'caption');
-
-          return content.append(toolbar, editable, placeholder).html();
+          var text = data.record ? data.record.caption : '';
+          return '<div>' +
+              '<div>' + 
+                '<div id="question-link" class="ui-state-default">' +
+                '  <span class="ui-icon ui-icon-link" />' +
+                '</div>' +
+              '</div>' +
+              '<div id="question-editor2" contenteditable="true">' + text + '</div>' +
+              '<input type="text" name="caption" style="display:none;"/>' +
+            '</div>';
         }
       },
       type: {
@@ -161,13 +151,30 @@ $( function() {
     },
     formCreated: function(event, data) {
       var link = data.form.find('#question-link');
+      var editor = data.form.find('#question-editor2');
+      editor.blur(function() {
+        console.log("Selection: " + window.getSelection().getRangeAt(0).startOffset);
+      });
+      
       link.click(function() {
         // Todo: Show a dialog to select metadata
         // drop-down: [Model] Game | Team | Player
         // drop-down: [Field] Caption | Name | etc
         // drop-down: [Condition] Equals | Not equal | Contains
-        // textfield: with suggestion
-        console.log("Show metadata dialog here");
+        // textfield: with suggestion 
+        $("#question-link-dialog").dialog({
+          modal: true,
+          buttons: {
+            "Ok": function() {
+              console.log("Ok");
+              $(this).dialog( "close" );
+            },
+            "Cancel": function() {
+              console.log("Cancel");
+              $(this).dialog( "close" );
+            }
+          }
+        });
       });
       link.hover(function() {
         $(this).toggleClass('ui-state-hover');
@@ -175,7 +182,7 @@ $( function() {
     },
     formSubmitting: function(event, data) {
       // Copy over the content of editable div to the hidden input form
-      data.form.find('input[name="caption"]').attr('value', $('#question-editor').html());
+      data.form.find('input[name="caption"]').attr('value', $('#question-editor2').html());
     }
   });
 
