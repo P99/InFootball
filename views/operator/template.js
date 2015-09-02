@@ -22,6 +22,8 @@ $( function() {
     type: "jtable"
   });
 
+  var dialog = $.metadatalink();
+
   templates.ref.jtable({
     title: "References",
     jqueryuiTheme: true,
@@ -153,28 +155,20 @@ $( function() {
       var link = data.form.find('#question-link');
       var editor = data.form.find('#question-editor2');
       editor.blur(function() {
-        console.log("Selection: " + window.getSelection().getRangeAt(0).startOffset);
-      });
+        console.log("Selection: " + window.getSelection().getRangeAt(0).startOffset + " - " + window.getSelection().getRangeAt(0).endOffset);
+      		// Store selection info into the dialog
+        dialog.data("selectionStart", window.getSelection().getRangeAt(0).startOffset);
+        dialog.data("selectionEnd", window.getSelection().getRangeAt(0).endOffset);
+						});
       
       link.click(function() {
         // Todo: Show a dialog to select metadata
         // drop-down: [Model] Game | Team | Player
         // drop-down: [Field] Caption | Name | etc
         // drop-down: [Condition] Equals | Not equal | Contains
-        // textfield: with suggestion 
-        $("#question-link-dialog").dialog({
-          modal: true,
-          buttons: {
-            "Ok": function() {
-              console.log("Ok");
-              $(this).dialog( "close" );
-            },
-            "Cancel": function() {
-              console.log("Cancel");
-              $(this).dialog( "close" );
-            }
-          }
-        });
+        // textfield: with suggestion
+        $("#metadata-link-edit").val("");
+        dialog.dialog( "open" );
       });
       link.hover(function() {
         $(this).toggleClass('ui-state-hover');
