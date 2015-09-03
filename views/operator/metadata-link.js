@@ -1,57 +1,90 @@
 (function ( $ ) {
+  var widget = undefined;
 
-  $.metadatalink = function() {
-    // Todo: Pass the dialog ID as option
+  $.metadatalink = function(options) {
+    var client = new clientInterface(options);
+    $.extend(client, options);
+    return client;
+  }
 
-				return $("#question-link-dialog").dialog({
-							autoOpen: false,
-							modal: true,
-							buttons: {
-									"Ok": function() {
-											// Retreive dialog private data
-											var target = $(this).data('target');
-											var start = $(this).data('selectionStart');
-											var end = $(this).data('selectionEnd');
-		
-											// Link displayed within the popup
-											var value = $("#metadata-link-edit").val();
-		
-											if (target) {
-													// Launched from clicking a link
-													// Just eedit the link with new link target
-													target.attr("href", value);
-											} else {
-													// Launched with the link button
-													var str = $("#question-editor2").html();
-													var out = str.slice(0, start);
-													out += '<a class="metadata-link" href="' + value + '">';
-													out += str.slice(start, end);
-													out += '</a>';
-													out += str.slice(end);
-													$("#question-editor2").html(out);
-											}
-		
-											// Reset all private data
-											var target = $(this).data('target', undefined);
-											var start = $(this).data('selectionStart', undefined);
-											var end = $(this).data('selectionEnd', undefined);
-		
-											$(this).dialog( "close" );
-									},
-									"Cancel": function() {
-											console.log("Cancel");
-											$(this).dialog( "close" );
-									}
-							}
-				});
+  function clientInterface(options) {
+    initDialog(options.ref);
+
+    this.show = function(target) {
+      this.ref.data('target', target);
+      this.ref.find(".metadata-link-edit").val(this.ref.data('value'));
+      this.ref.dialog( 'open' );
+    };
+
+    this.linkify = function() {
+      // Make a link out of current selection
+      var selection = window.getSelection();
+      var str = selection.anchorNode.nodeValue;
+      var start = selection.getRangeAt(0).startOffset;
+      var end = selection.getRangeAt(0).endOffset;
+      var out = str.slice(0, start);
+      var value = str.slice(start, end);
+
+      out += '<a class="metadata-link" href="">';
+      out += value;
+      out += '</a>';
+      out += str.slice(end);
+
+      this.ref.data('target', $(selection.anchorNode.parentNode));
+      this.ref.data('value', '');
+      this.ref.data('result', out);
+    };
   };
 
-  $(document).on('click', '.metadata-link', function(event) { 
-    var dialog = $("#question-link-dialog");
-    console.log("Metadata link: " + $(this).attr("href"));
-    $("#metadata-link-edit").val($(this).attr("href"));
-    dialog.data('target', $(this));
-    dialog.dialog( 'open' );
+  // Private functions
+  function initDialog(ref) {
+    widget = ref;
+    ref.dialog({
+      autoOpen: false,
+      modal: true,
+      buttons: {
+        "Ok": function() {
+          // Retreive dialog private data
+          var target = $(this).data('target');
+				
+          // uri edited within the popup
+          var value = $(this).find(".metadata-link-edit").val();
+				
+          if (target.is('a')) {
+            // Launched by clicking a link
+            // Just edit the link with new uri
+            // Todo: save in database
+            target.attr('href', value);
+          } else {
+            // Launched with the 'link' icon
+            target.html($(this).data('result'));
+            target.find('a').attr('href', value);
+          }
+				
+          // Reset all private data
+          $(this).data('target', undefined);
+          $(this).data('value', undefined);
+          $(this).data('result', undefined);
+
+          $(this).dialog( "close" );
+        },
+        "Cancel": function() {
+          $(this).dialog( "close" );
+
+          // Reset all private data
+          $(this).data('target', undefined);
+          $(this).data('value', undefined);
+          $(this).data('result', undefined);
+        }
+      }
+    });
+  }
+
+  // Internal handler for click action
+  $(document).on('click', '.metadata-link', function(event) {
+    widget.find(".metadata-link-edit").val($(this).attr("href"));
+    widget.data('target', $(this));
+    widget.dialog( 'open' );
     event.preventDefault();
   });
 

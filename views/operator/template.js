@@ -22,7 +22,9 @@ $( function() {
     type: "jtable"
   });
 
-  var dialog = $.metadatalink();
+  var dialog = $.metadatalink({
+    ref: $( "#question-link-dialog" )
+  });
 
   templates.ref.jtable({
     title: "References",
@@ -155,10 +157,8 @@ $( function() {
       var link = data.form.find('#question-link');
       var editor = data.form.find('#question-editor2');
       editor.blur(function() {
-        console.log("Selection: " + window.getSelection().getRangeAt(0).startOffset + " - " + window.getSelection().getRangeAt(0).endOffset);
       		// Store selection info into the dialog
-        dialog.data("selectionStart", window.getSelection().getRangeAt(0).startOffset);
-        dialog.data("selectionEnd", window.getSelection().getRangeAt(0).endOffset);
+        dialog.linkify();
 						});
       
       link.click(function() {
@@ -167,8 +167,7 @@ $( function() {
         // drop-down: [Field] Caption | Name | etc
         // drop-down: [Condition] Equals | Not equal | Contains
         // textfield: with suggestion
-        $("#metadata-link-edit").val("");
-        dialog.dialog( "open" );
+        dialog.show();
       });
       link.hover(function() {
         $(this).toggleClass('ui-state-hover');
