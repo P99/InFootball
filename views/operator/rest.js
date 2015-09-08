@@ -51,7 +51,7 @@
         break;
       }
       context[client.model].socket.emit('rest', { 'method': method, 'uri': client.root + uri, 'token': token, 'data': record });
-      console.log("Sending: " + method + " " + (client.root + uri) + " token:" + token + " record: " + record);
+      console.log("Sending: " + method + " " + (client.root + uri) + " token:" + token + " record: " + JSON.stringify(record));
       return $.Deferred(function (deferred) {
         pending[token] = { 'promise': deferred, 'client': client };
       });

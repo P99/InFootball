@@ -19,6 +19,7 @@
     this.linkify = function() {
       // Make a link out of current selection
       var selection = window.getSelection();
+      if (selection.anchorNode) {
       var str = selection.anchorNode.nodeValue;
       var start = selection.getRangeAt(0).startOffset;
       var end = selection.getRangeAt(0).endOffset;
@@ -33,6 +34,7 @@
       this.ref.data('target', $(selection.anchorNode.parentNode));
       this.ref.data('value', '');
       this.ref.data('result', out);
+      }
     };
   };
 

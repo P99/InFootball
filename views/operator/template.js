@@ -131,12 +131,12 @@ $( function() {
           var text = data.record ? data.record.caption : '';
           return '<div>' +
               '<div>' + 
-                '<div id="question-link" class="ui-state-default">' +
+                '<div id="question-link" class="ui-state-default" style="width:1em; float:right">' +
                 '  <span class="ui-icon ui-icon-link" />' +
                 '</div>' +
               '</div>' +
-              '<div id="question-editor2" contenteditable="true">' + text + '</div>' +
-              '<input type="text" name="caption" style="display:none;"/>' +
+              '<div id="question-editor2" contenteditable="true" style="margin-right:1.5em">' + text + '</div>' +
+              '<input type="text" name="caption" style="display:none;" />' +
             '</div>';
         }
       },
@@ -151,6 +151,22 @@ $( function() {
       difficulty: {
         title: "Difficulté",
         options: {"1": "Facile", "2": "Moyen", "3": "Difficile"}
+      },
+      answers: {
+        title: "Réponses",
+        input: function (data) {
+          // Defaults to 3 empty answers
+          console.log("data.record: " + JSON.stringify(data.record));
+          var answsers = data.record ? data.record.answers.split("|") : [ "", "", "" ];
+          var str = '<div>';
+          answsers.forEach(function(value, index) {
+            str += '<span class="ui-icon ui-icon-triangle-1-e" style="float:left" />';
+            str += '<div class="answer-' + index + ' " contenteditable="true" style="margin-left:1em">' + value + '</div>';
+          });
+          str += '<input type="text" name="answers" style="display:none" />';
+          str += '</div>';
+          return str;
+        }
       }
     },
     formCreated: function(event, data) {
@@ -174,8 +190,12 @@ $( function() {
       });
     },
     formSubmitting: function(event, data) {
-      // Copy over the content of editable div to the hidden input form
+      // [caption] Copy over the content of editable div to the hidden input form
       data.form.find('input[name="caption"]').attr('value', $('#question-editor2').html());
+
+      // [answser] Copy over N items and join them into a string
+      var answer = data.form.find('div[class^="answer-"]').not(':last').append('|').end().text();
+      data.form.find('input[name="answers"]').attr('value', answer);
     }
   });
 
