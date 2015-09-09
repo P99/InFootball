@@ -159,7 +159,10 @@ $( function() {
           var str = '<div>';
           answsers.forEach(function(value, index) {
             str += '<span class="ui-icon ui-icon-triangle-1-e" style="float:left" />';
-            str += '<div class="answer-' + index + ' " contenteditable="true" style="margin-left:1em">' + value + '</div>';
+            str += '<div class="ui-state-default metadata-link" style="width:1em; float:right">';
+            str +=  '  <span class="ui-icon ui-icon-link" />';
+            str +=  '</div>';
+            str += '<div class="answer-' + index + ' " contenteditable="true" style="margin-left:1em;margin-right:1.5em">' + value + '</div>';
           });
           str += '<input type="text" name="answers" style="display:none" />';
           str += '</div>';
@@ -182,7 +185,10 @@ $( function() {
       data.form.find('input[name="caption"]').attr('value', caption);
 
       // [answser] Copy over N items and join them into a string
-      var answer = data.form.find('div[class^="answer-"]').not(':last').append('|').end().text();
+      var answer = "";
+      data.form.find('div[class^="answer-"]').not(':last').append('|').end().each(function() {
+        answer += $(this).html();
+      });
       data.form.find('input[name="answers"]').attr('value', answer);
     }
   });
