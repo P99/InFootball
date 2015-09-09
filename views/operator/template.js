@@ -22,7 +22,7 @@ $( function() {
     type: "jtable"
   });
 
-  var dialog = $.metadatalink({
+  $.metadatalink({
     ref: $( "#question-link-dialog" )
   });
 
@@ -131,7 +131,7 @@ $( function() {
           var text = data.record ? data.record.caption : '';
           return '<div>' +
               '<div>' + 
-                '<div id="question-link" class="ui-state-default" style="width:1em; float:right">' +
+                '<div class="ui-state-default metadata-link" style="width:1em; float:right">' +
                 '  <span class="ui-icon ui-icon-link" />' +
                 '</div>' +
               '</div>' +
@@ -170,24 +170,13 @@ $( function() {
       }
     },
     formCreated: function(event, data) {
-      var link = data.form.find('#question-link');
-      var editor = data.form.find('#question-editor2');
-      editor.blur(function() {
+      //var link = data.form.find('#question-link');
+      //var editor = data.form.find('#question-editor2');
+      //editor.blur(function() {
       		// Store selection info into the dialog
-        dialog.linkify();
-						});
+        //dialog.linkify();
+						//});
       
-      link.click(function() {
-        // Todo: Show a dialog to select metadata
-        // drop-down: [Model] Game | Team | Player
-        // drop-down: [Field] Caption | Name | etc
-        // drop-down: [Condition] Equals | Not equal | Contains
-        // textfield: with suggestion
-        dialog.show();
-      });
-      link.hover(function() {
-        $(this).toggleClass('ui-state-hover');
-      });
     },
     formSubmitting: function(event, data) {
       // [caption] Copy over the content of editable div to the hidden input form

@@ -2,41 +2,8 @@
   var widget = undefined;
 
   $.metadatalink = function(options) {
-    var client = new clientInterface(options);
-    $.extend(client, options);
-    return client;
-  }
-
-  function clientInterface(options) {
     initDialog(options.ref);
-
-    this.show = function(target) {
-      this.ref.data('target', target);
-      this.ref.find(".metadata-link-edit").val(this.ref.data('value'));
-      this.ref.dialog( 'open' );
-    };
-
-    this.linkify = function() {
-      // Make a link out of current selection
-      var selection = window.getSelection();
-      if (selection.anchorNode) {
-      var str = selection.anchorNode.nodeValue;
-      var start = selection.getRangeAt(0).startOffset;
-      var end = selection.getRangeAt(0).endOffset;
-      var out = str.slice(0, start);
-      var value = str.slice(start, end);
-
-      out += '<a class="metadata-link" href="">';
-      out += value;
-      out += '</a>';
-      out += str.slice(end);
-
-      this.ref.data('target', $(selection.anchorNode.parentNode));
-      this.ref.data('value', '');
-      this.ref.data('result', out);
-      }
-    };
-  };
+  }
 
   // Private functions
   function initDialog(ref) {
@@ -65,7 +32,6 @@
 				
           // Reset all private data
           $(this).data('target', undefined);
-          $(this).data('value', undefined);
           $(this).data('result', undefined);
 
           $(this).dialog( "close" );
@@ -75,19 +41,47 @@
 
           // Reset all private data
           $(this).data('target', undefined);
-          $(this).data('value', undefined);
           $(this).data('result', undefined);
         }
       }
     });
   }
 
+  function saveSelection() {
+    // Make a link out of current selection
+    console.log("Saving selection");
+    var selection = window.getSelection();
+    if (selection.anchorNode) {
+    var str = selection.anchorNode.nodeValue;
+    var start = selection.getRangeAt(0).startOffset;
+    var end = selection.getRangeAt(0).endOffset;
+    var out = str.slice(0, start);
+    var value = str.slice(start, end);
+
+    out += '<a class="metadata-link" href="">';
+    out += value;
+    out += '</a>';
+    out += str.slice(end);
+
+    widget.data('target', $(selection.anchorNode.parentNode));
+    widget.data('result', out);
+    }
+  }
+
   // Internal handler for click action
   $(document).on('click', '.metadata-link', function(event) {
-    widget.find(".metadata-link-edit").val($(this).attr("href"));
-    widget.data('target', $(this));
+    if ($(this).is('a')) {
+      widget.find(".metadata-link-edit").val($(this).attr("href"));
+      widget.data('target', $(this));
+    } else {
+      widget.find(".metadata-link-edit").val('');
+    }
     widget.dialog( 'open' );
     event.preventDefault();
+  });
+
+  $(document).on('blur', 'div[contenteditable="true"]', function(event) {
+    saveSelection();
   });
 
 }( jQuery ));
