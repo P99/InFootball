@@ -130,12 +130,10 @@ $( function() {
         input: function(data) {
           var text = data.record ? data.record.caption : '';
           return '<div>' +
-              '<div>' + 
-                '<div class="ui-state-default metadata-link" style="width:1em; float:right">' +
-                '  <span class="ui-icon ui-icon-link" />' +
-                '</div>' +
+              '<div class="ui-state-default metadata-link" style="width:1em; float:right">' +
+              '  <span class="ui-icon ui-icon-link" />' +
               '</div>' +
-              '<div id="question-editor2" contenteditable="true" style="margin-right:1.5em">' + text + '</div>' +
+              '<div class="caption" contenteditable="true" style="margin-right:1.5em">' + text + '</div>' +
               '<input type="text" name="caption" style="display:none;" />' +
             '</div>';
         }
@@ -180,7 +178,8 @@ $( function() {
     },
     formSubmitting: function(event, data) {
       // [caption] Copy over the content of editable div to the hidden input form
-      data.form.find('input[name="caption"]').attr('value', $('#question-editor2').html());
+      var caption = data.form.find('div[class="caption"]').html();
+      data.form.find('input[name="caption"]').attr('value', caption);
 
       // [answser] Copy over N items and join them into a string
       var answer = data.form.find('div[class^="answer-"]').not(':last').append('|').end().text();
