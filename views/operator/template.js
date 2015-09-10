@@ -155,7 +155,7 @@ $( function() {
         input: function (data) {
           // Defaults to 3 empty answers
           console.log("data.record: " + JSON.stringify(data.record));
-          var answsers = data.record ? data.record.answers.split("|") : [ "", "", "" ];
+          var answsers = data.record ? data.record.answers.split('|') : [ '', '', '' ];
           var str = '<div>';
           answsers.forEach(function(value, index) {
             str += '<span class="ui-icon ui-icon-triangle-1-e" style="float:left" />';
