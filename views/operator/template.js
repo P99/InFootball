@@ -154,18 +154,12 @@ $( function() {
         title: "Réponses",
         input: function (data) {
           // Defaults to 3 empty answers
-          console.log("data.record: " + JSON.stringify(data.record));
           var answsers = data.record ? data.record.answers.split('|') : [ '', '', '' ];
-          var str = '<div>';
+          var str = '<input class="spinner-answer" />';
           answsers.forEach(function(value, index) {
-            str += '<span class="ui-icon ui-icon-triangle-1-e" style="float:left" />';
-            str += '<div class="ui-state-default metadata-link" style="width:1em; float:right">';
-            str +=  '  <span class="ui-icon ui-icon-link" />';
-            str +=  '</div>';
-            str += '<div class="answer-' + index + ' " contenteditable="true" style="margin-left:1em;margin-right:1.5em">' + value + '</div>';
+            str += insertAnswer(value, index);
           });
           str += '<input type="text" name="answers" style="display:none" />';
-          str += '</div>';
           return str;
         }
       }
@@ -177,6 +171,19 @@ $( function() {
       		// Store selection info into the dialog
         //dialog.linkify();
 						//});
+      var widget = data.form.find('.spinner-answer');
+      widget.spinner({ min: 1, max: 3 });
+      widget.spinner('value', data.form.find('div[class^="answer-"]').size());
+      widget.on('spin', function(event, ui) {
+        if ( ui.value == this.value ) 
+          return;
+
+        if ( ui.value < this.value ) {
+          data.form.find('div[class^="answer-"]').last().parent().remove();
+        } else {
+          data.form.find('div[class^="answer-"]').last().parent().after(insertAnswer('', this.value));
+        }
+      });
       
     },
     formSubmitting: function(event, data) {
@@ -242,6 +249,18 @@ $( function() {
       }
     }
   });
+
+  // Utility
+  function insertAnswer(value, index) {
+    var str = '<div>';
+    str += '  <span class="ui-icon ui-icon-triangle-1-e" style="float:left" />';
+    str += '  <div class="ui-state-default metadata-link" style="width:1em; float:right">';
+    str += '    <span class="ui-icon ui-icon-link" />';
+    str += '  </div>';
+    str += '  <div class="answer-' + index + ' " contenteditable="true" style="margin-left:1em;margin-right:1.5em">' + value + '</div>';
+    str += '</div>';
+    return str;
+  }
 
   templates.ref.jtable("load", {});
   questions.ref.jtable("load", {});
