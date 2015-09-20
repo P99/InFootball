@@ -8,10 +8,19 @@ window.addEventListener("load", function (event) {
     switch (msg.uri) {
     case 'games':
       // Display the list of ongoing games
-      // Allow the player to join a game
-      // Fixme: Joining the first game by default
       if (msg.data.length) {
-        socket.emit('football', {action: "JOIN", uri: msg.data[0]._id});
+        ref.innerHTML = "";
+        msg.data.forEach(function(item) {
+          ref.innerHTML += "<a id='" + item._id + "' href='#'>" + item.title + "</a></br>";
+        });
+        // Adding event listener on parent
+        ref.addEventListener("click", function(event) {
+          ref.innerHTML = "";
+          socket.emit('football', {action: "JOIN", uri: event.target.id});
+        });
+        
+      } else {
+        ref.innerHTML = "Pas de jeu en cours";
       }
       break;
     case 'question':
