@@ -64,7 +64,7 @@ function playerHandler(io, socket, msg) {
         }
       }
       console.log("Games IDs: " + JSON.stringify(games));
-      gameModel.find({'_id': { $in: games}}, function(err, docs) {
+      gameModel.find({'_id': { $in: games } }, function(err, docs) {
         if (!err) {
           console.log("Games: " + JSON.stringify(docs));
           socket.emit('football', { uri: 'games', data: docs });
