@@ -1,5 +1,6 @@
 div.ui-front(style={position: "fixed", top: "1em", right: "1em"})
   button#user-settings #{user.firstName} #{user.lastName}
+  input(type="hidden", id="token", value="#{user.token}")
   ul#user-menu
     li Logout
     li Item 2

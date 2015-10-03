@@ -12,3 +12,11 @@ function webSocketPort() {
   }
   return port;
 }
+
+function webSocketToken() {
+  var ref = document.getElementById("token");
+  if (ref.value) {
+    return { query: 'token=' + ref.value };
+  } 
+  return undefined;
+}

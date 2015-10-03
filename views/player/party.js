@@ -1,7 +1,7 @@
 
 window.addEventListener("load", function (event) {
 
-  var socket = io( document.location.hostname + ':' + webSocketPort() + '/player' );
+  var socket = io( document.location.hostname + ':' + webSocketPort() + '/player', webSocketToken() );
   var games = document.getElementById("games");
   var questions = document.getElementById("questions");
   socket.on('football', function(msg) {

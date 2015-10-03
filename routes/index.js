@@ -1,4 +1,5 @@
 var express = require('express');
+var security = require('../passport/token');
 var router = express.Router();
 
 var isAuthenticated = function (req, res, next) {
@@ -32,7 +33,7 @@ module.exports = function(passport){
 
 	/* GET Registration Page */
 	router.get('/signup', function(req, res){
-		res.render('login/register',{message: req.flash('message')});
+		res.render('login/register',{ message: req.flash('message') });
 	});
 
 	/* Handle Registration POST */
@@ -49,8 +50,13 @@ module.exports = function(passport){
 	});
 
 	/* GET Home Page */
-	router.get('/home', isAuthenticated, function(req, res){
+	router.get('/home', isAuthenticated, function(req, res) {
   var template = "";
+  // Building user public profile
+  // This data is inserted inside a token and signed
+  // The token appears in an hidden field in the DOM
+  req.user.token = security.sign({ id: req.user.id, username: req.user.username });
+
   switch(req.user.type) {
   case "Admin":
 		  template = 'admin/home';

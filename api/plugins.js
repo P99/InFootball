@@ -1,4 +1,5 @@
 var socketIO = require('socket.io');
+var security = require('../passport/token');
 var rest = require('./rest');
 var football = require('./football');
 
@@ -10,6 +11,8 @@ module.exports = function(server) {
     function createNamespace(namespace) {
       console.log("createNamespace: " + namespace);
       var handler = io.of(namespace);
+      handler.use(security.authenticate);
+
       handler.on('connection', function (socket) {
         // Iterate through plugins
         socket.on('rest', function(msg) {
