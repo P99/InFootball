@@ -55,7 +55,7 @@ module.exports = function(passport){
   // Building user public profile
   // This data is inserted inside a token and signed
   // The token appears in an hidden field in the DOM
-  req.user.token = security.sign({ id: req.user.id, username: req.user.username });
+  req.user.token = security.sign({ id: req.user._id, username: req.user.username });
 
   switch(req.user.type) {
   case "Admin":

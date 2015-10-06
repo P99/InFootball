@@ -1,6 +1,9 @@
 var jwt = require('jsonwebtoken');
+var User = require('../models/user');
 
-function authenticate(data, accept) {
+
+function authenticate(namespace) {
+  return function(data, accept) {
     var token;
     var req = data.request || data;
 
@@ -13,19 +16,37 @@ function authenticate(data, accept) {
     }
 
     if (!token) {
-      // fail
       return accept(new Error("unauthorized"));
     }
 
+    // Checking token signature + if expired
     jwt.verify(token, 'c27002abbec4e54d7c33b9740675a069', {}, function(err, decoded) {
       if (err) {
-        // fail
         return accept(new Error("unauthorized"));
       }
 
-      data.user = decoded;
-      accept();
+      // Retreive user from the database
+      User.findById(decoded.id, function( err, user ) {
+        if (err) {
+          return accept(new Error("unauthorized"));
+        }
+        
+        // Check user security level
+        var securityLevels = ["player", "operator", "admin"];
+        var namespaceSecurityLevel = securityLevels.indexOf(namespace);
+        var userSecurityLevel = securityLevels.indexOf(user.type.toLowerCase());
+        if ((namespaceSecurityLevel >= 0) && (namespaceSecurityLevel >=0 )
+          && (userSecurityLevel >= namespaceSecurityLevel)) {
+          console.log("[" + namespace + "] Access for user: " + user.firstName + " (" + user.type + ") -> granted");
+          data.user = user;
+          accept();
+        } else {
+          console.log("[" + namespace + "] Access for user: " + user.firstName + " (" + user.type + ") -> rejected");
+          return accept(new Error("unauthorized"));
+        }
+      });
     });
+  }
 }
 
 function sign(data) {

@@ -11,7 +11,7 @@ module.exports = function(server) {
     function createNamespace(namespace) {
       console.log("createNamespace: " + namespace);
       var handler = io.of(namespace);
-      handler.use(security.authenticate);
+      handler.use(security.authenticate(namespace));
 
       handler.on('connection', function (socket) {
         // Iterate through plugins
