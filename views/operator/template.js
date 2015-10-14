@@ -16,9 +16,16 @@ $( function() {
   });
 
   var questions = $.rest({
-    model: "questions", 
+    model: "questions",
     namespace: "operator",
     ref: $( "#questions" ),
+    type: "jtable"
+  });
+
+  var groups = $.rest({
+    model: "groups",
+    namespace: "operator",
+    ref: $( "#groups" ),
     type: "jtable"
   });
 
@@ -88,8 +95,57 @@ $( function() {
     }
   });
 
+  var groupsJtableDef = {
+    title: "...",
+    jqueryuiTheme: true,
+    openChildAsAccordion: true,
+    actions: groups.actions(),
+    fields: {
+      _id: {
+        key: true,
+        list: false
+      },
+      children: {
+        width: "2%",
+        edit: false,
+        create: false,
+        display: function(data) {
+          console.log("groups.root.match(/groups/g).length: " + groups.root.match(/groups/g).length)
+          if (groups.root.match(/groups/g).length >= 2) {
+            return "";
+          }
+          var button = $( '<div class="ui-state-default"><span class="ui-icon ui-icon-triangle-1-s" /></div>');
+          button.click(function() {
+            groups.root = "groups/561ecc45bb2c1c7d0c09576c/groups/" + data.record._id + "/";
+            groups.ref.jtable(
+              'openChildTable',
+              button.closest('tr'),
+              groupsJtableDef,
+              function (data) {
+                data.childTable.jtable('load');
+              }
+            );
+          });
+          return button;
+        }
+      },
+      title: {
+        title: "Intitulé"
+      },
+      type: {
+        title: "Type",
+        options: ["Contexte", "Sous-contexte", "Séquence"]
+      }
+    }
+  };
+
+  groups.ref.jtable(groupsJtableDef);
+  groups.ref.find('.jtable-title-text').html("Contextes");
+  //groups.root = "groups/first/";
+  groups.root = "groups/561ecc45bb2c1c7d0c09576c/"; // Oups!!! change REST API to accept 'first' keyword
+
   questions.ref.jtable({
-    title: "Questions:",
+    title: "Questions",
     jqueryuiTheme: true,
     selecting: true,
     multiselect: true,
@@ -263,6 +319,7 @@ $( function() {
   }
 
   templates.ref.jtable("load", {});
+  groups.ref.jtable("load", {});
   questions.ref.jtable("load", {});
   teams.ref.hide();
 });

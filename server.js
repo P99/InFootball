@@ -80,4 +80,5 @@ require('./models/team');
 require('./models/player');
 require('./models/question');
 require('./models/game');
+require('./models/group');
 var plugins = require('./api/plugins')(webServer);
