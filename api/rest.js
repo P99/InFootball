@@ -38,7 +38,7 @@ module.exports = function(namespace, io, socket, msg) {
                     var child = pair.model;
                     pair = pairs.pop();
                     model = mongoose.models[pair.model];
-                    model.findById(pair.instance, function( err, doc ) {
+                    model.findOne(buildQuery(pair.instance), function( err, doc ) {
                       if (!err && doc && doc[child]) {
                         doc[child].push(object._id);
                         console.log("JSON: " + JSON.stringify(doc));
@@ -73,7 +73,7 @@ module.exports = function(namespace, io, socket, msg) {
                 var child = pair.model;
                 pair = pairs.pop();
                 model = mongoose.models[pair.model];
-                model.findById(pair.instance, function( err, doc ) {
+                model.findOne(buildQuery(pair.instance), function( err, doc ) {
                   if (!err && doc && doc[child]) {
                     model = mongoose.models[child];
                     model.find({_id: { $in: doc[child] }}, function( err, children ) {
@@ -115,7 +115,7 @@ module.exports = function(namespace, io, socket, msg) {
               var child = pair.model;
               pair = pairs.pop();
               model = mongoose.models[pair.model];
-              model.findById(pair.instance, function( err, doc ) {
+              model.findOne(buildQuery(pair.instance), function( err, doc ) {
                 if (!err && doc && doc[child]) {
                   var index = doc[child].indexOf(msg.data._id);
                   if (index >= 0) {
@@ -165,6 +165,16 @@ module.exports = function(namespace, io, socket, msg) {
         }
       }
     });
+  }
+
+  function buildQuery(instance) {
+    var query;
+    if (instance.length < 12) {
+      query = { title: instance };
+    } else {
+      query = { _id: instance };
+    }
+    return query;
   }
 
   function parseUri(uri) {
