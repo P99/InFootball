@@ -7,7 +7,8 @@ var Schema = mongoose.Schema({
   type: String,
   status: String,
   difficulty: Number,
-  contexts: [ObjectId],
+  context: ObjectId,
+  subcontext: ObjectId,
   answers: {type: [String], 
     set: function(str) { return str.split("|"); }, 
     get: function(array) { return array.join("|"); }

@@ -200,6 +200,53 @@ $( function() {
         title: "Statut",
         options: ["Chaud", "Froid"]
       },
+      context: {
+        title: "Contexte",
+        list: false,
+        options: function (data) {
+          var options = [];
+          $.ajax({
+             url: "rest/groups/context/groups/any",
+             async: false,
+             dataType: 'json',
+             success: function (response) {
+                response.forEach(function(record) {
+                  options.push({
+                    "DisplayText": record.title,
+                    "Value": record._id
+                  });
+                });
+             }
+          });
+          return options;
+        }
+      },
+      subcontext: {
+        title: "Sous-contexte",
+        list: false,
+        dependsOn: "context",
+        options: function (data) {
+          if (data.source == "list") {
+            return [{"DisplayText": "--- select a context ---", "Value": "0"}];
+          }
+
+          var options = [];
+          $.ajax({
+             url: "rest/groups/context/groups/" + data.dependedValues.context + "/groups/any",
+             async: false,
+             dataType: 'json',
+             success: function (response) {
+                response.forEach(function(record) {
+                  options.push({
+                    "DisplayText": record.title,
+                    "Value": record._id
+                  });
+                });
+             }
+          });
+          return options;
+        }
+      },
       difficulty: {
         title: "Difficulté",
         options: {"1": "Facile", "2": "Moyen", "3": "Difficile"}

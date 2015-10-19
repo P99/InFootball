@@ -1,5 +1,6 @@
 var express = require('express');
 var security = require('../passport/token');
+var rest = require('../api/rest2');
 var router = express.Router();
 
 var isAuthenticated = function (req, res, next) {
@@ -71,6 +72,9 @@ module.exports = function(passport){
 
   res.render(template, { user: req.user });
 	});
+
+ /* Rest API over HTTP */
+  router.all('/rest/*', isAuthenticated, rest);
 
 	return router;
 }
