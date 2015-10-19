@@ -23,8 +23,7 @@ $( function() {
   });
 
   var game = $.football({
-    namespace: "operator",
-    ref: $( "#question-editor" )
+    namespace: "operator"
   });
 
   // Load async options for template field
@@ -92,6 +91,7 @@ $( function() {
               // Todo: retreive data about teams from the template ID
               // But the call is asynchrnous and also READ only implements list queries
               // Should add a 'recursive' options ( games > template > teams )
+              $( "#tabs-live" ).show();
               $( "#game-toolbar" ).append('div').html("Match XXXX - " + data.record.status);
               $( "#game-toolbar" ).append($('<button />').button({
                   label: "Quitter"
@@ -99,6 +99,7 @@ $( function() {
                   game.leave();
 
                   questions.ref.hide();
+                  $( "#tabs-live" ).hide();
                   $( "#game-toolbar" ).empty();
                   games.ref.show();
                 })
@@ -153,5 +154,7 @@ $( function() {
         }
       }
   }).hide();
+
+  $( "#tabs-live" ).tabs().hide();
 
 });
