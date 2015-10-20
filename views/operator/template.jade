@@ -5,6 +5,25 @@ div
   div#side(style={width: "59%", float: "left", "margin-left": "1%"})
     div#questions
     div#teams-selection
-  div#question-link-dialog(style={position: "absolute"}, title="Link metadata")
-    input.metadata-link-edit(type="text")
-    div.metadata-link-edit2
+  div#question-link-dialog(title="Link metadata")
+    div.metadata-link-view
+    form.metadata-link-edit
+      div
+        select(name="model")
+          option(value="team") Equipe
+          option(value="player") Joueur
+      div
+        select(name="team-ball")
+          option(value="hasball") Possède le ballon
+          option(value="noball") Ne possède pas le ballon
+      div
+        select(name="player-ball")
+          option(value="hasball") Possède le ballon
+          option(value="noball") Ne possède pas le ballon
+      div
+        label(for="player-position") Poste: 
+        select(name="player-position")
+          option(value="goalkeeper") Gardien
+          option(value="defender") Défensseur
+          option(value="midfielder") Milieu
+          option(value="forward") Attaquant      

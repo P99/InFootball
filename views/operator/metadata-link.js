@@ -8,21 +8,20 @@
   // Private functions
   function initDialog(ref) {
     widget = ref;
+
     ref.dialog({
       autoOpen: false,
+      autoResize: true,
       modal: true,
       buttons: {
         "Ok": function() {
-          // Retreive dialog private data
           var target = $(this).data('target');
-				
-          // uri edited within the popup
-          var value = $(this).find(".metadata-link-edit").val();
-				
+          var value = $(".metadata-link-edit").serialize();
+
           if (target.is('a')) {
             // Launched by clicking a link
             // Just edit the link with new uri
-            // Todo: save in database
+            // Todo: save in database ??!!
             target.attr('href', value);
           } else {
             // Launched with the 'link' icon
@@ -71,10 +70,10 @@
   // Internal handler for click action
   $(document).on('click', '.metadata-link', function(event) {
     if ($(this).is('a')) {
-      widget.find(".metadata-link-edit").val($(this).attr("href"));
+      widget.find(".metadata-link-view").html($(this).attr("href"));
       widget.data('target', $(this));
     } else {
-      widget.find(".metadata-link-edit").val('');
+      widget.find(".metadata-link-view").html('');
     }
     widget.dialog( 'open' );
     event.preventDefault();
