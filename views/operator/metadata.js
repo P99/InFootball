@@ -97,7 +97,13 @@ $( function() {
         title: "Age"
       },
       position: {
-        title: "Poste"
+        title: "Poste",
+        options: [
+          { Value: "goalkeeper", DisplayText: "Gardien" },
+          { Value: "defender",   DisplayText: "Défensseur" },
+          { Value: "midfielder", DisplayText: "Milieu" },
+          { Value: "forward",    DisplayText: "Attaquant" }
+        ]
       },
       number: {
         title: "Maillot"
