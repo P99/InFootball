@@ -23,4 +23,20 @@ Schema.statics.namespace = function() {
   return "operator";
 }
 
+Schema.statics.containsMetadata = function (question) {
+  if (typeof question.answers == "string") {
+    question.answers = question.answers.split("|");
+  }
+
+  if (question.caption.indexOf("href=") >= 0) {
+    return true;
+  }
+  return question.answers.some(function(item) {
+    if (item.indexOf("href=") >= 0) {
+      return true;
+    }
+    return false;
+  });
+}
+
 module.exports = mongoose.model('questions', Schema);

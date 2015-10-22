@@ -4,6 +4,7 @@
   var namespace;
   var socket;
   var game;
+  var listeners = [];
 
   // Public interface
   $.football = function(options) {
@@ -23,15 +24,32 @@
       socket.emit('football', { action: "LEAVE", uri: game });
     };
 
-    this.select = function(questionId) {
-      socket.emit('football', { action: "SELECT", uri: game, data: questionId });
+    this.send = function(question) {
+      socket.emit('football', { action: "SEND", uri: game, data: question });
     };
+
+    this.on = function(event, callback) {
+      if (typeof callback == "function") {
+        listeners.push({ event: event, callback: callback });
+      }
+    }
+  }
+
+  function notify(event, data) {
+    listeners.forEach(function(item) {
+      if (item.event == event) {
+         item.callback(data);
+      }
+    });
   }
 
   $.football.handler = function(msg) {
     switch (msg.action) {
       case "MATCH":
-        console.log("Receive MATCH data: " + JSON.stringify(msg.data));
+        console.log("Received MATCH data: " + JSON.stringify(msg.data));
+        break;
+      case "EDIT":
+        notify("edit", msg.data);
         break;
       default:
         console.log("Un-handled action: " + msg.action);

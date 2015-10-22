@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var gameModel = require('../models/game');
 var questionModel = require('../models/question');
+var context = {};
 
 module.exports = function(namespace, io, socket, msg) {
   console.log("[football] namespace=" + namespace + " msg: " + JSON.stringify(msg));
@@ -20,32 +21,40 @@ function operatorHandler(io, socket, msg) {
   var room = socket.rooms.filter(function(key) { return key.indexOf('football-') == 0; });
   switch  (msg.action) {
     case "JOIN":
-      gameModel.findById( msg.uri, function( err, doc ) {
-        if (!err) {
-          // Create the room after the gameId
-          socket.join('football-' + msg.uri); 
-          // Reply "MATCH" with the whole match data (teams)
-          // Todo inflate the game object with template etc
-          socket.emit('football', {action: "MATCH", uri: msg.uri, data: doc});
-        }
-      });
+      // The room is named after the gameId
+      room = 'football-' + msg.uri;
+      socket.join(room);
+
+      var game = context[room];
+      if (game) {
+        socket.emit('football', { action: "MATCH", uri: msg.uri, data: game });
+      } else {
+        gameModel.findById( msg.uri, function( err, game ) {
+          if (!err) {
+            // Update global context to save database operations
+            context[room] = { game: game, questions: [] };
+            // Reply "MATCH" with the whole match data (teams)
+            // Todo inflate the game object with template etc
+            socket.emit('football', { action: "MATCH", uri: msg.uri, data: game });
+          }
+        });
+      }
       break;
     case "LEAVE":
       // Todo: cleanup the context
       socket.leave('football-' + msg.uri);
       break;
-    case "SELECT":
-      // Todo: Grab the question from the database
+    case "SEND":
       // Send to all players
-      questionModel.findById( msg.data, function ( err, doc) {
-        if (!err) {
-          console.log("Sending question to players in room " + room + ": " + JSON.stringify(doc));
-          //io.sockets.in('player').emit("Questions");
-          //io.of('player').to('room').emit('football', {uri: msg.uri, data: doc});
-          io.of('player').to(room).emit('football', {uri: 'question', data: doc});
-        }
-      });
-      break
+      var question = msg.data;
+      if (questionModel.containsMetadata(question)) {
+        io.of('operator').to(room).emit('football', { action: "EDIT", data: question })
+      } else {
+        context[room]['questions'].push(question);
+        console.log("Sending question to players in room " + room + ": " + JSON.stringify(question));
+        io.of('player').to(room).emit('football', { uri: 'question', data: question });
+      }
+      break;
     default:
       console.log("Un-handled action: " + msg.action);
   }
@@ -72,7 +81,7 @@ function playerHandler(io, socket, msg) {
       });
       break;
     case "JOIN":
-      socket.join('football-' + msg.uri); 
+      socket.join('football-' + msg.uri);
       break;
     case "LEAVE":
       socket.leave('football-' + msg.uri);

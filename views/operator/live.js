@@ -26,6 +26,22 @@ $( function() {
     namespace: "operator"
   });
 
+  game.on('edit', function (data) {
+    console.log("EDIT: " + JSON.stringify(data));
+    // Dummy implementation just removing links
+    var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
+    data.caption = data.caption.replace(re, "{replace me}");
+    for (var i in data.answers) {
+      console.log(" > " + i);
+      data.answers[i] = data.answers[i].replace(re, "{replace me answers}");
+      console.log("Replacing answer: " + data.answers[i]);
+    }
+    data.answers.forEach(function (item) {
+      console.log("Replaced answer: " + item);
+    });
+    game.send(data);
+  });
+
   // Load async options for template field
   templates.emit("READ").done(function(data) {
     optionsTemplates = data;
@@ -147,7 +163,7 @@ $( function() {
               icons: { secondary: "ui-icon-triangle-1-e" },
               label: "Envoyer"
             }).click(function() {
-              game.select(data.record._id);
+              game.send(data.record);
             });
             return $button;
           }
