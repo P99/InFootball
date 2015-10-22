@@ -16,7 +16,7 @@
       buttons: {
         "Ok": function() {
           var target = $(this).data('target');
-          var value = $(".metadata-link-edit").serialize();
+          var value = $(".metadata-link-form").serialize();
 
           if (target.is('a')) {
             // Launched by clicking a link
@@ -69,17 +69,19 @@
 
   // Internal handler for click action
   $(document).on('click', '.metadata-link', function(event) {
+    var value = "";
     if ($(this).is('a')) {
-      widget.find(".metadata-link-view").html($(this).attr("href"));
+      value = $(this).attr("href");
       widget.data('target', $(this));
-    } else {
-      widget.find(".metadata-link-view").html('');
-    }
+    } 
+    widget.find(".metadata-link-form").deserialize(value);
     widget.dialog( 'open' );
     event.preventDefault();
   });
 
   $(document).on('blur', 'div[contenteditable="true"]', function(event) {
+    // Todo: Disable the link button when there is no saved selection
+    // or just take the whole content of the editable div
     saveSelection();
   });
 
