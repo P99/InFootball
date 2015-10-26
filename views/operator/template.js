@@ -253,11 +253,17 @@ $( function() {
       },
       answers: {
         title: "Réponses",
+        display: function (data) {
+          if (typeof data.record.answers == 'string') {
+            data.record.answers = JSON.parse(data.record.answers);
+          }
+          return data.record.answers.join(" | ");
+        },
         input: function (data) {
           // Defaults to 3 empty answers
-          var answsers = data.record ? data.record.answers.split('|') : [ '', '', '' ];
+          var answers = data.record ? data.record.answers : ["", "", ""];
           var str = '<input class="spinner-answer" />';
-          answsers.forEach(function(value, index) {
+          answers.forEach(function(value, index) {
             str += insertAnswer(value, index);
           });
           str += '<input type="text" name="answers" style="display:none" />';
@@ -266,12 +272,6 @@ $( function() {
       }
     },
     formCreated: function(event, data) {
-      //var link = data.form.find('#question-link');
-      //var editor = data.form.find('#question-editor2');
-      //editor.blur(function() {
-      		// Store selection info into the dialog
-        //dialog.linkify();
-						//});
       var widget = data.form.find('.spinner-answer');
       widget.spinner({ min: 1, max: 3 });
       widget.spinner('value', data.form.find('div[class^="answer-"]').size());
@@ -293,11 +293,11 @@ $( function() {
       data.form.find('input[name="caption"]').attr('value', caption);
 
       // [answser] Copy over N items and join them into a string
-      var answer = "";
-      data.form.find('div[class^="answer-"]').not(':last').append('|').end().each(function() {
-        answer += $(this).html();
+      var answers = [];
+      data.form.find('div[class^="answer-"]').each(function() {
+        answers.push($(this).html());
       });
-      data.form.find('input[name="answers"]').attr('value', answer);
+      data.form.find('input[name="answers"]').attr('value', JSON.stringify(answers));
     }
   });
 

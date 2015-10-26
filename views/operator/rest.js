@@ -163,8 +163,13 @@
     var pairs = uri.split("&");
     var decode = "";
     pairs.forEach( function(key) {
+      var value;
       token = key.split("=");
-      data[token[0]] = decodeURIComponent(token[1].replace(/\+/g, " "));
+      value = decodeURIComponent(token[1].replace(/\+/g, " "));
+      if (value.match(/\[.*\]/g)) {
+        value = JSON.parse(value);
+      }
+      data[token[0]] = value;
     });
     return data;
   }

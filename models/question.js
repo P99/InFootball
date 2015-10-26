@@ -9,10 +9,7 @@ var Schema = mongoose.Schema({
   difficulty: Number,
   context: ObjectId,
   subcontext: ObjectId,
-  answers: {type: [String], 
-    set: function(str) { return str.split("|"); }, 
-    get: function(array) { return array.join("|"); }
-  }
+  answers: [String]
 });
 
 // Enable Mongoose getter functions
@@ -24,10 +21,6 @@ Schema.statics.namespace = function() {
 }
 
 Schema.statics.containsMetadata = function (question) {
-  if (typeof question.answers == "string") {
-    question.answers = question.answers.split("|");
-  }
-
   if (question.caption.indexOf("href=") >= 0) {
     return true;
   }
