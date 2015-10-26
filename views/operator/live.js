@@ -26,6 +26,7 @@ $( function() {
     namespace: "operator"
   });
 
+  // Operator 3 - Fake replacing metadata
   game.on('edit', function (data) {
     console.log("EDIT: " + JSON.stringify(data));
     // Dummy implementation just removing links
@@ -40,6 +41,25 @@ $( function() {
       console.log("Replaced answer: " + item);
     });
     game.send(data);
+  });
+
+  // Operator 2 - Answering questions
+  game.on('sent', function (data) {
+    var box = '<div class="alert alert-warning fade in">';
+    box += '<a class="close" href="' + data._id + '">x</a>';
+    box += '<h4>' + data.caption + '</h4>';
+    box += '<p>';
+    data.answers.forEach(function(value) {
+      box += '<a class="btn btn-default">' + value + '</a>';
+    });
+    box += '</p>';
+    box += "</div>";
+    $("#questions-answers").append(box);
+  });
+  $(document).on('click', '.close', function(event) {
+    console.log("Closing question: " + $(this).attr("href"));
+    $(this).parent().hide();
+    event.preventDefault();
   });
 
   // Load async options for template field

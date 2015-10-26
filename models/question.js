@@ -12,10 +12,6 @@ var Schema = mongoose.Schema({
   answers: [String]
 });
 
-// Enable Mongoose getter functions
-Schema.set('toObject', { getters: true });
-Schema.set('toJSON', { getters: true });
-
 Schema.statics.namespace = function() {
   return "operator";
 }

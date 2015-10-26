@@ -48,10 +48,10 @@ function operatorHandler(io, socket, msg) {
       // Send to all players
       var question = msg.data;
       if (questionModel.containsMetadata(question)) {
-        io.of('operator').to(room).emit('football', { action: "EDIT", data: question })
+        io.of('operator').to(room).emit('football', { action: "EDIT", data: question });
       } else {
-        context[room]['questions'].push(question);
-        console.log("Sending question to players in room " + room + ": " + JSON.stringify(question));
+        context[room]['questions'][question._id] = question;
+        io.of('operator').to(room).emit('football', { action: "SENT", data: question });
         io.of('player').to(room).emit('football', { uri: 'question', data: question });
       }
       break;
