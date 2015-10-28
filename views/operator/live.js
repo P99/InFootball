@@ -45,22 +45,31 @@ $( function() {
 
   // Operator 2 - Answering questions
   game.on('sent', function (data) {
-    var box = '<div class="alert alert-warning fade in">';
-    box += '<a class="close" href="' + data._id + '">x</a>';
+    console.log("Receiving new question");
+    var box = '<div id="' + data._id + '"class="alert alert-warning fade in">';
+    box += '<a class="close">x</a>';
     box += '<h4>' + data.caption + '</h4>';
-    box += '<p>';
+    //box += '<p>';
     data.answers.forEach(function(value) {
       box += '<a class="btn btn-default">' + value + '</a>';
     });
-    box += '</p>';
+    //box += '</p>';
     box += "</div>";
-    $("#questions-answers").append(box);
+    var $box = $(box);
+    $box.find(".btn").on('click', function(event) {
+      data.validation = event.currentTarget.text;
+      game.select(data);
+      $(this).parent().hide();
+      event.preventDefault();
+    });
+    $box.find(".close").on('click', function(event) {
+      game.cancel(data);
+      $(this).parent().hide();
+      event.preventDefault();
+    });
+    $("#questions-answers").append($box);
   });
-  $(document).on('click', '.close', function(event) {
-    console.log("Closing question: " + $(this).attr("href"));
-    $(this).parent().hide();
-    event.preventDefault();
-  });
+  $(document)
 
   // Load async options for template field
   templates.emit("READ").done(function(data) {

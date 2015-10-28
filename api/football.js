@@ -19,6 +19,7 @@ module.exports = function(namespace, io, socket, msg) {
 
 function operatorHandler(io, socket, msg) {
   var room = socket.rooms.filter(function(key) { return key.indexOf('football-') == 0; });
+  var question = msg.data;
   switch  (msg.action) {
     case "JOIN":
       // The room is named after the gameId
@@ -46,17 +47,32 @@ function operatorHandler(io, socket, msg) {
       break;
     case "SEND":
       // Send to all players
-      var question = msg.data;
       if (questionModel.containsMetadata(question)) {
+        question.status = "edit";
         io.of('operator').to(room).emit('football', { action: "EDIT", data: question });
       } else {
-        context[room]['questions'][question._id] = question;
+        // question id has to be unique (could be sent several times)
+        question._id = Math.random().toString(36).substr(2);
+        question.created = Date.now();
+        question.status = "sent";
+        context[room]['questions'][question._id] = {};
         io.of('operator').to(room).emit('football', { action: "SENT", data: question });
         io.of('player').to(room).emit('football', { uri: 'question', data: question });
       }
       break;
+    case "SELECT":
+      question.status = "validated";
+      break;
+    case "CANCEL":
+      question.status = "cancelled";
+      io.of('player').to(room).emit('football', { uri: 'question', data: question });
+      break;
     default:
       console.log("Un-handled action: " + msg.action);
+  }
+  // Save any context update
+  if (question && context[room]['questions'][question._id]) {
+    context[room]['questions'][question._id] = question;
   }
 }
 

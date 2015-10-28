@@ -28,6 +28,14 @@
       socket.emit('football', { action: "SEND", uri: game, data: question });
     };
 
+    this.cancel = function(question) {
+      socket.emit('football', { action: "CANCEL", uri: game, data: question });
+    };
+
+    this.select = function(question) {
+      socket.emit('football', { action: "SELECT", uri: game, data: question });
+    };
+
     this.on = function(event, callback) {
       if (typeof callback == "function") {
         listeners.push({ event: event, callback: callback });
