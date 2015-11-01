@@ -33,7 +33,7 @@
     };
 
     this.select = function(question) {
-      socket.emit('football', { action: "SELECT", uri: game, data: question });
+      socket.emit('football', { action: "ANSWER", uri: game, data: question });
     };
 
     this.on = function(event, callback) {
