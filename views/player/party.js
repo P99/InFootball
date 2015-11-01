@@ -27,7 +27,15 @@ window.addEventListener("load", function (event) {
       }
       break;
     case 'question':
-      questions.innerHTML += msg.data.caption + "</br>";
+      var question = msg.data;
+      var box = '<div id="' + question._id + '"class="alert alert-warning fade in">';
+      // box += '<a class="close">x</a>';
+      box += '<h4>' + question.caption + '</h4>';
+      question.answers.forEach(function(value) {
+        box += '<a class="btn btn-default">' + value + '</a>';
+      });
+      box += "</div>";
+      questions.innerHTML += box;
       break;
     }
   });
