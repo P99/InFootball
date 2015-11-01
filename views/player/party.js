@@ -14,14 +14,6 @@ window.addEventListener("load", function (event) {
         msg.data.forEach(function(item) {
           games.innerHTML += "<a id='" + item._id + "' href='#'>" + item.title + "</a></br>";
         });
-        // Adding event listener on parent
-        games.addEventListener("click", function(event) {
-          if (event.target.tagName.toLowerCase() == "a") {
-            games.innerHTML = "";
-            socket.emit('football', {action: "JOIN", uri: event.target.id});
-          }
-        });
-        
       } else {
         games.innerHTML = "Pas de jeu en cours";
       }
@@ -39,6 +31,22 @@ window.addEventListener("load", function (event) {
       break;
     }
   });
-  socket.emit('football', {action: "HELLO"});
+  socket.emit('football', { action: "HELLO" });
 
+  // Adding event listeners on parent containers
+  // So it means click event will bubble up and 
+  // we can make a generic handling for nested items
+  games.addEventListener("click", function(event) {
+    if (event.target.tagName.toLowerCase() == "a") {
+      games.innerHTML = "";
+      socket.emit('football', { action: "JOIN", uri: event.target.id });
+    }
+  });
+
+  questions.addEventListener("click", function(event) {
+    var answer = event.target.textContent;
+    var box = event.target.parentNode;
+    socket.emit('football', { action: "ANSWER", uri: "questions/" + box.id, data: answer });
+    box.style.visibility = "hidden";
+  });
 });

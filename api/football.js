@@ -96,6 +96,9 @@ function playerHandler(io, socket, msg) {
         }
       });
       break;
+    case "ANSWER":
+      console.log("Receiving answer from: " + socket.user.username + " questionID is " + msg.uri + " answer is " + msg.data);
+      break;
     case "JOIN":
       socket.join('football-' + msg.uri);
       break;
