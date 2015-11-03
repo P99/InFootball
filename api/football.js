@@ -54,7 +54,7 @@ function operatorHandler(io, socket, msg) {
         question.status = "edit";
         io.of('operator').to(room).emit('football', { action: "EDIT", data: question });
       } else {
-        question.expires = Date.now() + 3000; // Now + 3 seconds
+        question.expires = Date.now() + 10000; // Now + 10 seconds
         question.status = "sent";
         context[room]['questions'][question._id] = {};
         io.of('operator').to(room).emit('football', { action: "SENT", data: question });
@@ -135,12 +135,10 @@ function scoreHandler(room) {
   // If the question has a valid answer + was not cancelled
   // Then compare timestamp and increment score
   // Flush treated answers on player side
-
   for (playerID in context[room]['players']) {
     var player = context[room]['players'][playerID];
-    console.log("player: " + player.profile._id);
+    var answers = []; // to hold the sliced array
     for (var i=0; i<player.answers.length; i++) {
-      console.log("answers: " + i);
       var attempt = player.answers[i];
       var id = attempt.questionID;
       var question = context[room]['questions'][id];
@@ -151,13 +149,16 @@ function scoreHandler(room) {
               && (attempt.timestamp < question.expires)) {
               player.score++;
               console.log("Player " + player.profile.username + " > score = " + player.score);
+            } else {
+              // Keep this for next iteration
+              answers.push(attempt);
             }
-            /* Fall through */
+            break;
           case "cancelled":
-            player.answers.slice(i-1, 1);
             break;
         }
       }
-    }
-  }
+    } // end foreach answer
+    player.answers = answers;
+  } // end foreach player
 }

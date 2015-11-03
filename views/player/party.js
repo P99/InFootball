@@ -20,14 +20,13 @@ window.addEventListener("load", function (event) {
       break;
     case 'question':
       var question = msg.data;
-      var box = '<div id="' + question._id + '"class="alert alert-warning fade in">';
-      // box += '<a class="close">x</a>';
+      var box = '<div id="' + question._id + '"class="alert alert-warning">';
       box += '<h4>' + question.caption + '</h4>';
       question.answers.forEach(function(value) {
         box += '<a class="btn btn-default">' + value + '</a>';
       });
       box += "</div>";
-      questions.innerHTML += box;
+      questions.innerHTML = box;
       break;
     }
   });
