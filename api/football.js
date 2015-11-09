@@ -43,7 +43,7 @@ function operatorHandler(io, socket, msg) {
       break;
     case "LEAVE":
       // Todo: cleanup the context
-      socket.leave('football-' + msg.uri);
+      socket.leave(room);
       break;
     case "SEND":
       // Send to all players
@@ -58,7 +58,6 @@ function operatorHandler(io, socket, msg) {
         question.status = "live";
         context[room]['questions'][question._id] = {};
         io.of('operator').to(room).emit('football', { action: "SENT", data: question });
-        io.of('player').to(room).emit('football', { uri: 'question', data: question });
       }
       break;
     case "ANSWER":
@@ -66,7 +65,6 @@ function operatorHandler(io, socket, msg) {
       break;
     case "CANCEL":
       question.status = "cancelled";
-      io.of('player').to(room).emit('football', { uri: 'question', data: question });
       break;
     default:
       console.log("Un-handled action: " + msg.action);
@@ -74,6 +72,8 @@ function operatorHandler(io, socket, msg) {
   // Save any context update
   if (question && context[room]['questions'][question._id]) {
     context[room]['questions'][question._id] = question;
+    io.of('player').to(room).emit('football', { uri: 'question', data: question });
+    scoreHandler(room);
   }
 }
 
@@ -105,7 +105,6 @@ function playerHandler(io, socket, msg) {
         answer: msg.data,
         timestamp: Date.now()
       });
-      scoreHandler(room);
       break;
     case "JOIN":
       room = 'football-' + msg.uri;
@@ -144,14 +143,15 @@ function scoreHandler(room) {
       var question = context[room]['questions'][id];
       if (question) {
         switch (question.status) {
+          case "live":
+            // Keep this for next iteration
+            answers.push(attempt);
+            break;
           case "validated":
             if ((attempt.answer == question.validation)
               && (attempt.timestamp < question.expires)) {
               player.score++;
               console.log("Player " + player.profile.username + " > score = " + player.score);
-            } else {
-              // Keep this for next iteration
-              answers.push(attempt);
             }
             break;
           case "cancelled":

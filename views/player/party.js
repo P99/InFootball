@@ -29,8 +29,8 @@ window.addEventListener("load", function (event) {
           box += '<a class="btn btn-default">' + value + '</a>';
         });
         box += "</div>";
-        questions.innerHTML = box;
       }
+      questions.innerHTML = box;
       break;
     }
   });
