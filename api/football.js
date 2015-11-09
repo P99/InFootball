@@ -55,7 +55,7 @@ function operatorHandler(io, socket, msg) {
         io.of('operator').to(room).emit('football', { action: "EDIT", data: question });
       } else {
         question.expires = Date.now() + 10000; // Now + 10 seconds
-        question.status = "sent";
+        question.status = "live";
         context[room]['questions'][question._id] = {};
         io.of('operator').to(room).emit('football', { action: "SENT", data: question });
         io.of('player').to(room).emit('football', { uri: 'question', data: question });

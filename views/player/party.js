@@ -20,13 +20,17 @@ window.addEventListener("load", function (event) {
       break;
     case 'question':
       var question = msg.data;
-      var box = '<div id="' + question._id + '"class="alert alert-warning">';
-      box += '<h4>' + question.caption + '</h4>';
-      question.answers.forEach(function(value) {
-        box += '<a class="btn btn-default">' + value + '</a>';
-      });
-      box += "</div>";
-      questions.innerHTML = box;
+      var box = "";
+      var ref = document.getElementById(question._id);
+      if (!ref && question.status == "live") {
+        box += '<div id="' + question._id + '"class="alert alert-warning">';
+        box += '<h4>' + question.caption + '</h4>';
+        question.answers.forEach(function(value) {
+          box += '<a class="btn btn-default">' + value + '</a>';
+        });
+        box += "</div>";
+        questions.innerHTML = box;
+      }
       break;
     }
   });
