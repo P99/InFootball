@@ -1,13 +1,15 @@
 $(function() {
-  var menu = $("#user-menu");
-  $("#user-settings").button({
+  var header = $("#user-menu");
+  var button = header.find("button");
+  var dropdown = header.find("ul");
+  button.button({
     icons: {
       secondary: "ui-icon-triangle-1-s"
     }
   }).click(function() {
-    menu.show();
+    dropdown.show();
   }).css("min-width", "6em");
-  menu.menu({
+  dropdown.menu({
     select: function(event, ui) {
       switch(ui.item.text()) {
       case "Logout":
@@ -16,16 +18,14 @@ $(function() {
       default:
         console.log("Menu item slected: " + ui.item.text());
       }
-      menu.hide();
+      dropdown.hide();
     }
   }).position({
     my: "left top ",
     at: "left bottom",
-    of: $("#user-settings")
+    of: button
   }).hide();
-  $("#user-settings, #user-menu").mouseleave(function() { 
-    if(!menu.is(":hover")) {
-      menu.hide();
-    }
+  header.mouseleave(function() { 
+    dropdown.hide();
   });
 });

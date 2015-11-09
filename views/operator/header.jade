@@ -1,7 +1,7 @@
-div.ui-front(style={position: "fixed", top: "1em", right: "1em"})
-  button#user-settings #{user.firstName} #{user.lastName}
+div#user-menu(class="ui-front", style={position: "fixed", top: "1em", right: "1em"})
+  button #{user.firstName} #{user.lastName}
   input(type="hidden", id="token", value="#{user.token}")
-  ul#user-menu
+  ul
     li Logout
     li Item 2
     li Item 3
