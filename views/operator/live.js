@@ -42,6 +42,49 @@ $( function() {
     });
     game.send(data);
   });
+  // UI
+  $.ajax({
+    url: "rest/teams/55b00e2b85ef5a7c0edb3166/players/any",
+    async: true,
+    dataType: 'json',
+    success: function (players) {
+      var str = '<ul>';
+      players.forEach(function(player) {
+        str += '<li>' + player.name + '</li>';
+      });
+      str += '</ul>';
+      $('#players-list').html(str);
+      $('#players-list li').draggable({ revert: true });
+    }
+  });
+  $("#players-composition").change(
+    function (e) {
+      var composition = $(this).val();
+      var field = $("#players-field");
+      var target = field.find("#players-layout");
+      console.log("SELECT SELECT:  " + composition );
+
+      var str = '';
+      var rows = composition.split("-");
+      var height = field.height() / rows.length;
+      
+      rows.reverse().forEach(function(value, index) {
+         var y = height * index + height/2 -15;
+         var width = field.width() / value;
+         for (var i=0; i<value; i++) {
+           var x = width * i + width/2 -35;
+           str += '<div style="position:absolute;top:'+ y +'px;left:' + x +'px;width:70px;height:30px;border-style:dotted;"></div>';
+         }
+      });
+      target.html(str);
+      $("#players-layout div").droppable({
+        'drop': function(event, ui) {
+          console.log("DROP DROP DROP: ")
+        }
+      });
+      
+    }
+  );
 
   // Operator 2 - Answering questions
   game.on('sent', function (data) {

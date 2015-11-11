@@ -17,5 +17,13 @@ div#tabs-live
     div#questions-answers
 
   div#tabs-live-3
-    p Contenu 2
+    div#players-list(style={float: "left", margin: "20px"})
+    div#players-field(style={float: "left", position: "relative"})
+      include ../../public/assets/field.svg
+      div#players-layout
+    select#players-composition(style={float: "left"})
+      option --select--
+      option 4-4-2
+      option 4-3-3
+      option 5-3-2
 
