@@ -43,20 +43,22 @@ $( function() {
     game.send(data);
   });
   // UI
-  $.ajax({
-    url: "rest/teams/55b00e2b85ef5a7c0edb3166/players/any",
-    async: true,
-    dataType: 'json',
-    success: function (players) {
-      var str = '<ul>';
-      players.forEach(function(player) {
-        str += '<li>' + player.name + '</li>';
-      });
-      str += '</ul>';
-      $('#players-list').html(str);
-      $('#players-list li').draggable({ revert: true });
-    }
-  });
+  function playerList(teamId) {
+    $.ajax({
+      url: "rest/teams/" + teamId + "/players/any",
+      async: true,
+      dataType: 'json',
+      success: function (players) {
+        var str = '<ul>';
+        players.forEach(function(player) {
+          str += '<li>' + player.name + '</li>';
+        });
+        str += '</ul>';
+        $('#players-list').html(str);
+        $('#players-list li').draggable({ revert: true });
+      }
+    });
+  }
   $("#players-composition").change(
     function (e) {
       var composition = $(this).val();
@@ -182,12 +184,15 @@ $( function() {
                 url: "rest/games/" + data.record._id + "?recurse=true",
                 async: true,
                 dataType: 'json',
-                success: function (obj) {
-                  console.log("TEMPLATE: " + JSON.stringify(obj));
+                success: function (result) {
+                  console.log("TEMPLATE: " + JSON.stringify(result));
+                  game.data = result;
                   $( "#game-toolbar" ).append('div').html("Match "
-                    + obj.title + ", "
-                    + obj.start.replace(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):\d{2}\.\d{3}Z/g, '$1 $2') + ", "
-                    + obj.templates.teams[0].title + " - " + obj.templates.teams[1].title + " ");
+                    + game.data.title + ", "
+                    + game.data.start.replace(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):\d{2}\.\d{3}Z/g, '$1 $2') + ", "
+                    + game.data.templates.teams[0].title + " - " + game.data.templates.teams[1].title + " ");
+                  // Todo: Make sure we can choose the other team as well?
+                  playerList(game.data.templates.teams[0]._id);
                   $( "#game-toolbar" ).append($('<button />').button({
                     label: "Quitter"
                   }).click(function() {
