@@ -182,9 +182,12 @@ $( function() {
                 url: "rest/games/" + data.record._id + "?recurse=true",
                 async: true,
                 dataType: 'json',
-                success: function (template) {
-                  console.log("TEMPLATE: " + JSON.stringify(template));
-                  $( "#game-toolbar" ).append('div').html("Match XXXX - " + data.record.status);
+                success: function (obj) {
+                  console.log("TEMPLATE: " + JSON.stringify(obj));
+                  $( "#game-toolbar" ).append('div').html("Match "
+                    + obj.title + ", "
+                    + obj.start.replace(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):\d{2}\.\d{3}Z/g, '$1 $2') + ", "
+                    + obj.templates.teams[0].title + " - " + obj.templates.teams[1].title + " ");
                   $( "#game-toolbar" ).append($('<button />').button({
                     label: "Quitter"
                   }).click(function() {
