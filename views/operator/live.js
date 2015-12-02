@@ -159,7 +159,7 @@ $( function() {
           title: "Statut",
           edit: false
         },
-        template: {
+        templates: {
           title: "Modèle",
           options: function(data) { return optionsTemplates.Options; }
         },
@@ -176,24 +176,30 @@ $( function() {
               console.log("Join game: " + data.record._id);
               game.join(data.record._id);
 
-              // Todo: retreive data about teams from the template ID
-              // But the call is asynchrnous and also READ only implements list queries
-              // Should add a 'recursive' options ( games > template > teams )
               $( "#tabs-live" ).show();
-              $( "#game-toolbar" ).append('div').html("Match XXXX - " + data.record.status);
-              $( "#game-toolbar" ).append($('<button />').button({
-                  label: "Quitter"
-                }).click(function() {
-                  game.leave();
 
-                  questions.ref.hide();
-                  $( "#tabs-live" ).hide();
-                  $( "#game-toolbar" ).empty();
-                  games.ref.show();
-                })
-              );
+              $.ajax({
+                url: "rest/games/" + data.record._id + "?recurse=true",
+                async: true,
+                dataType: 'json',
+                success: function (template) {
+                  console.log("TEMPLATE: " + JSON.stringify(template));
+                  $( "#game-toolbar" ).append('div').html("Match XXXX - " + data.record.status);
+                  $( "#game-toolbar" ).append($('<button />').button({
+                    label: "Quitter"
+                  }).click(function() {
+                    game.leave();
 
-              questions.root = "templates/" + data.record.template + "/";
+                    questions.ref.hide();
+                    $( "#tabs-live" ).hide();
+                    $( "#game-toolbar" ).empty();
+                    games.ref.show();
+                  })
+                );
+                }
+              });
+
+              questions.root = "templates/" + data.record.templates + "/";
               questions.ref.jtable('load');
 
               games.ref.hide();

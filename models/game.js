@@ -6,9 +6,8 @@ var Schema = mongoose.Schema({
   start: { type: Date },
   duration: Number,
   status: String,
-  template: ObjectId,
-  users: [ObjectId],
-  questions: [ObjectId]
+  templates: ObjectId,
+  users: [ObjectId]
 });
 
 Schema.statics.namespace = function() {

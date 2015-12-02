@@ -1,18 +1,16 @@
 
 var mongoose = require('mongoose');
+var Q = require('q');
 
 /* This file duplicates the code from rest.js */
 /* It does exactly the same thing, 
-/* was simply apadted to handle HTTP requests */
+/* was simply adapted to handle HTTP requests */
+/* Todo: Merge back the two files + restore security  */
 
 module.exports = function(req, res, next) {
-          var msg = {};
-          msg.uri = req.path.slice(6); // Removing '/rest'
-          msg.method = req.method;
-          msg.data = req.body; // Indefined unsless using body parser
 
-          // Todo: refactoring
-          var pairs = parseUri(msg.uri);
+          var msg = parseRequest(req);
+          var pairs = splitQuery(msg.uri);
           var pair = pairs.pop();
           var model = mongoose.models[pair.model];
 
@@ -64,8 +62,12 @@ module.exports = function(req, res, next) {
                 });
               }
             } else {
-              msg.data = "Invalid uri (should contain 'any')";
-              reply(msg);
+              if (msg.query["recurse"] == "true") {
+                console.log("Before findRecurse");
+                findRecurse(pair.model, pair.instance, function (doc) {
+                  reply({ status: "OK", data: doc });
+                });
+              }
             }
             break;
           default:
@@ -83,24 +85,54 @@ module.exports = function(req, res, next) {
 
         };
 
-  // Helper to replace findOneAndUpdate
-  // because the setters don't get called otherwise
-  function findByIdAndSave( model, id, data, next ){
-    model.findById( id, function( err, doc ) {
-      if( err ){
-        next( err );
-      } else {
-        if(! doc ){
-          next( new Error("Object to save not found"), null );
-        } else {
-          // There must be a better way of doing this
-          for( var k in data ){
-            doc[k] = data[k];
+  function findRecurse(name, id, next) {
+      var depth = 0;
+      var stack = [];
+      var model = mongoose.models[name];
+
+      var promise = model.findOne({_id: id}, function(err, doc) {
+        populate(doc).then(function(result) {
+          next(doc);
+        }, function(error) {
+          // Debug Me: We alawys go through there?? why?
+          next(doc);
+        });
+      });
+
+      function populate(doc) {
+          depth++;
+          var chain = [];
+
+          if (doc instanceof Array) {
+            doc = doc.pop();
           }
-          doc.save( next );
-        }
+          console.log("[" + depth + "] populate: " + JSON.stringify(doc));
+
+          if (stack.length) {
+            while (stack.length) {
+              var key = stack.pop();
+              if (doc[key] && !(doc[key] instanceof Array)) {
+                console.log("[" + depth + "] stack: " + key + " subdoc: " + doc[key]);
+                chain.push(populate(doc[key]));
+              }
+            }
+          } else {
+            for (var key in doc.schema.paths) {
+              var obj = doc.schema.paths[key];
+              if (((obj.instance == "ObjectID") && (obj.path != "_id"))
+               || ((obj.instance == "Array") && (obj.caster.instance == "ObjectID"))) {
+                stack.push(key);
+                chain.push(doc.populate(key, null, key).execPopulate());
+              }
+            }
+          }
+          if (chain.length) {
+            return Q.all(chain).then(populate);
+          } else {
+            console.log("END");
+            return "done";
+          }
       }
-    });
   }
 
   function buildQuery(instance) {
@@ -113,7 +145,7 @@ module.exports = function(req, res, next) {
     return query;
   }
 
-  function parseUri(uri) {
+  function splitQuery(uri) {
     var result = [];
     var tokens = uri.split("/");
     var max = tokens.length;
@@ -121,4 +153,13 @@ module.exports = function(req, res, next) {
       result.push({ model: tokens[i], instance: i+1<max ? tokens[i+1] : "any" });
     }
     return result;
+  }
+
+  function parseRequest(request) {
+    var msg = {};
+    msg.query = request.query;
+    msg.uri = request.path.slice(6); // Removing '/rest'
+    msg.method = request.method;
+    msg.data = request.body; // Undefined unsless using body parser
+    return msg;
   }
