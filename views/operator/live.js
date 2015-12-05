@@ -42,7 +42,7 @@ $( function() {
     });
     game.send(data);
   });
-  // UI
+  // The list of players is updated when we join the game
   function playerList(teamId) {
     $.ajax({
       url: "rest/teams/" + teamId + "/players/any",

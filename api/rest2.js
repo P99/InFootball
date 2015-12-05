@@ -63,7 +63,6 @@ module.exports = function(req, res, next) {
               }
             } else {
               if (msg.query["recurse"] == "true") {
-                console.log("Before findRecurse");
                 findRecurse(pair.model, pair.instance, function (doc) {
                   reply({ status: "OK", data: doc });
                 });
@@ -91,45 +90,57 @@ module.exports = function(req, res, next) {
       var model = mongoose.models[name];
 
       var promise = model.findOne({_id: id}, function(err, doc) {
-        populate(doc).then(function(result) {
+        populate(doc, true).then(function(result) {
+          console.log("findRecurse SUCCESS");
           next(doc);
         }, function(error) {
-          // Debug Me: We alawys go through there?? why?
+          console.log("findRecurse ERROR");
           next(doc);
         });
       });
 
-      function populate(doc) {
+      function populate(doc, self) {
           depth++;
           var chain = [];
+          var objects = [];
 
-          if (doc instanceof Array) {
-            doc = doc.pop();
-          }
-          console.log("[" + depth + "] populate: " + JSON.stringify(doc));
+          //console.log("[" + depth + "] populate " + (self ? "self" : "") + " : " + JSON.stringify(doc));
 
           if (stack.length) {
-            while (stack.length) {
-              var key = stack.pop();
-              if (doc[key] && !(doc[key] instanceof Array)) {
-                console.log("[" + depth + "] stack: " + key + " subdoc: " + doc[key]);
-                chain.push(populate(doc[key]));
-              }
-            }
+            // Unstack all pending operations
+            stack.forEach(function(op) {
+              objects.push(op.subtree[op.branch]);
+            });
+            stack = []; // empty stack before next recursion
+            objects.forEach(function(item) {
+              chain.push(populate(item, true));
+            });
           } else {
-            for (var key in doc.schema.paths) {
-              var obj = doc.schema.paths[key];
-              if (((obj.instance == "ObjectID") && (obj.path != "_id"))
-               || ((obj.instance == "Array") && (obj.caster.instance == "ObjectID"))) {
-                stack.push(key);
-                chain.push(doc.populate(key, null, key).execPopulate());
-              }
+
+            if (doc instanceof Array) {
+              objects = self ? doc : doc.slice(0, 1);
+            } else {
+              objects.push(doc);
             }
+
+            objects.forEach(function(doc) {
+              if (doc.populated) { // end of recursion return just "done"
+                for (var key in doc.schema.paths) {
+                  var obj = doc.schema.paths[key];
+                  if (((obj.instance == "ObjectID") && (obj.path != "_id"))
+                      || ((obj.instance == "Array") && (obj.caster.instance == "ObjectID") && (doc[key].length))) {
+                    if (mongoose.models[key]) {
+                      chain.push(doc.populate(key, null, key).execPopulate());
+                      stack.push({subtree: doc, branch: key});
+                    }
+                  }
+                }
+              }
+            });
           }
           if (chain.length) {
             return Q.all(chain).then(populate);
           } else {
-            console.log("END");
             return "done";
           }
       }
