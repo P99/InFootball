@@ -55,7 +55,9 @@ $( function() {
         });
         str += '</ul>';
         $('#players-list').html(str);
-        $('#players-list li').draggable({ revert: true });
+        $('#players-list li').draggable({
+          revert: "invalid"
+        });
       }
     });
   }
@@ -64,13 +66,13 @@ $( function() {
       var composition = $(this).val();
       var field = $("#players-field");
       var target = field.find("#players-layout");
-      console.log("SELECT SELECT:  " + composition );
 
       var str = '';
-      var rows = composition.split("-");
+      var rows = composition.split("-").reverse();
+      rows.push(1); // goal keeper
       var height = field.height() / rows.length;
       
-      rows.reverse().forEach(function(value, index) {
+      rows.forEach(function(value, index) {
          var y = height * index + height/2 -15;
          var width = field.width() / value;
          for (var i=0; i<value; i++) {
@@ -80,8 +82,15 @@ $( function() {
       });
       target.html(str);
       $("#players-layout div").droppable({
-        'drop': function(event, ui) {
-          console.log("DROP DROP DROP: ")
+        accept: "#players-list li",
+        drop: function(event, ui) {
+          ui.draggable.hide();
+          $(this).text(ui.draggable.text());
+        }
+      });
+      $("#players-list").droppable({
+        accept: "#players-list li",
+        drop: function(event, ui) {
         }
       });
       
