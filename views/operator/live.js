@@ -42,60 +42,6 @@ $( function() {
     });
     game.send(data);
   });
-  // The list of players is updated when we join the game
-  function playerList(teamId) {
-    $.ajax({
-      url: "rest/teams/" + teamId + "/players/any",
-      async: true,
-      dataType: 'json',
-      success: function (players) {
-        var str = '<ul>';
-        players.forEach(function(player) {
-          str += '<li>' + player.name + '</li>';
-        });
-        str += '</ul>';
-        $('#players-list').html(str);
-        $('#players-list li').draggable({
-          revert: "invalid"
-        });
-      }
-    });
-  }
-  $("#players-composition").change(
-    function (e) {
-      var composition = $(this).val();
-      var field = $("#players-field");
-      var target = field.find("#players-layout");
-
-      var str = '';
-      var rows = composition.split("-").reverse();
-      rows.push(1); // goal keeper
-      var height = field.height() / rows.length;
-      
-      rows.forEach(function(value, index) {
-         var y = height * index + height/2 -15;
-         var width = field.width() / value;
-         for (var i=0; i<value; i++) {
-           var x = width * i + width/2 -35;
-           str += '<div style="position:absolute;top:'+ y +'px;left:' + x +'px;width:70px;height:30px;border-style:dotted;"></div>';
-         }
-      });
-      target.html(str);
-      $("#players-layout div").droppable({
-        accept: "#players-list li",
-        drop: function(event, ui) {
-          ui.draggable.hide();
-          $(this).text(ui.draggable.text());
-        }
-      });
-      $("#players-list").droppable({
-        accept: "#players-list li",
-        drop: function(event, ui) {
-        }
-      });
-      
-    }
-  );
 
   // Operator 2 - Answering questions
   game.on('sent', function (data) {
@@ -200,8 +146,10 @@ $( function() {
                     + game.data.title + ", "
                     + game.data.start.replace(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):\d{2}\.\d{3}Z/g, '$1 $2') + ", "
                     + game.data.templates.teams[0].title + " - " + game.data.templates.teams[1].title + " ");
+
                   // Todo: Make sure we can choose the other team as well?
-                  playerList(game.data.templates.teams[0]._id);
+                  $.players(game.data.templates.teams[0]._id);
+
                   $( "#game-toolbar" ).append($('<button />').button({
                     label: "Quitter"
                   }).click(function() {
