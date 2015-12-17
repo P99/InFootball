@@ -8,16 +8,23 @@
       async: true,
       dataType: 'json',
       success: function (msg) {
-         // Build the list of players
-        var str = '<ul>';
         players = msg;
+        var $list = $("<ul>");
+
+        // Build the list of players
         players.forEach(function(player) {
-          str += '<li>' + makePlayer(player) + '</li>';
+          $item = $("<li>");
+          $item.append(makePlayer(player));
+          $list.append($item);
         });
-        str += '</ul>';
-        $('#players-list').html(str);
-        $('#players-list div').draggable({
-          revert: "invalid"
+        $('#players-list').append($list);
+        $("#players-list").droppable({
+          accept: "#players-layout div",
+          drop: function(event, ui) {
+            var id = ui.draggable.attr('id');
+            $("#players-layout").find("#" + id).parent().empty().droppable("enable");
+            $("#players-list").find("#" + id).attr("style", "position: relative").show();
+          }
         });
         $("#players-composition").change(updateComposition);
       }
@@ -46,26 +53,22 @@
     });
     target.html(str);
     $("#players-layout div").droppable({
-      accept: "#players-list div",
+      accept: "#players-list div, #players-layout div",
       tolerance: "touch",
       drop: function(event, ui) {
-        ui.draggable.hide();
         var id = ui.draggable.attr('id');
-        var $obj = $(makePlayer(id)).draggable({
-          revert: "invalid"
-        });
-        $(this).append($obj);
-      }
-    });
-    $("#players-list").droppable({
-      accept: "#players-layout div",
-      drop: function(event, ui) {
+        ui.draggable.hide();
+        if (ui.draggable.parent().parent().attr("id") == "players-layout") {
+          ui.draggable.parent().droppable("enable");
+        }
+        $(this).append(makePlayer(id));
+        $(this).droppable("disable");
       }
     });
   }
 
   function makePlayer(player) {
-    var str;
+    var $obj;
     if (typeof player == "string") {
       // Search player data from local cache
       var result = $.grep(players, function(item) { return item._id == player; });
@@ -74,9 +77,11 @@
       }
     }
     if (player) {
-      str = '<div id="' + player._id + '">' + player.name + '</div>';
+      $obj = $('<div id="' + player._id + '">' + player.name + '</div>').draggable({
+        revert: "invalid"
+      });;
     }
-    return str;
+    return $obj;
   }
 
 }( jQuery ));
