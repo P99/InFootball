@@ -26,21 +26,14 @@ $( function() {
     namespace: "operator"
   });
 
+  var op3 = $.players({});
+
   // Operator 3 - Fake replacing metadata
   game.on('edit', function (data) {
     console.log("EDIT: " + JSON.stringify(data));
-    // Dummy implementation just removing links
-    var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
-    data.caption = data.caption.replace(re, "{replace me}");
-    for (var i in data.answers) {
-      console.log(" > " + i);
-      data.answers[i] = data.answers[i].replace(re, "{replace me answers}");
-      console.log("Replacing answer: " + data.answers[i]);
-    }
-    data.answers.forEach(function (item) {
-      console.log("Replaced answer: " + item);
+    data = op3.edit(data, function(data) {
+      game.send(data);
     });
-    game.send(data);
   });
 
   // Operator 2 - Answering questions
@@ -148,7 +141,7 @@ $( function() {
                     + game.data.templates.teams[0].title + " - " + game.data.templates.teams[1].title + " ");
 
                   // Todo: Make sure we can choose the other team as well?
-                  $.players(game.data.templates.teams[0]._id);
+                  op3.load(game.data.templates.teams[0]._id);
 
                   $( "#game-toolbar" ).append($('<button />').button({
                     label: "Quitter"

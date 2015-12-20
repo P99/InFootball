@@ -1,8 +1,19 @@
 (function ( $ ) {
 
   var players;
+  var question;
+  var editedCallback;
 
-  $.players = function (teamId) {
+  $.players = function(options) {
+    return new interface();
+  };
+
+  function interface() {
+    this.load = loadPlayers;
+    this.edit = editQuestion;
+  }
+
+  function loadPlayers(teamId) {
     $.ajax({
       url: "rest/teams/" + teamId + "/players/any",
       async: true,
@@ -67,21 +78,85 @@
     });
   }
 
-  function makePlayer(player) {
-    var $obj;
-    if (typeof player == "string") {
+  function findPlayer(id) {
       // Search player data from local cache
-      var result = $.grep(players, function(item) { return item._id == player; });
+      var player;
+      var result = $.grep(players, function(item) { return item._id == id; });
       if (result.length == 1) {
         player = result[0];
       }
+      return player;
+  }
+
+  function makePlayer(player) {
+    var $obj;
+    if (typeof player == "string") {
+      player = findPlayer(player);
     }
     if (player) {
       $obj = $('<div id="' + player._id + '">' + player.name + '</div>').draggable({
         revert: "invalid"
-      });;
+      }).click(function() {
+        if ($(this).is('.ui-draggable-dragging')) {
+          return;
+        }
+        var $edit = $("#question-edit").find(".btn-warning");
+        if ($edit.length) {
+          var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
+          var id = $(this).attr('id');
+          var player = findPlayer(id);
+          console.log("Clicked: " + player.name);
+          for (var i in question.answers) {
+            question.answers[i] = question.answers[i].replace(re, player.name);
+            break;
+          }
+          // Add visual feedback here
+          $edit.text(player.name);
+          $edit.switchClass("btn-warning", "btn-success");
+          $("#question-edit").fadeOut(1000);
+          // Notify
+          if (typeof editedCallback == "function") {
+            console.log("Edit send notify");
+            editedCallback(question);
+          }
+        }
+      });
     }
     return $obj;
+  }
+
+  function editQuestion(data, callback) {
+    // Save current question
+    question = data;
+    editedCallback = callback;
+
+    // Display
+    var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
+    var box = '<div id="' + data._id + '"class="alert alert-warning fade in">';
+    box += '<h4>' + data.caption + '</h4>';
+    data.answers.forEach(function(value) {
+      var result = re.exec(value);
+      if (result) {
+        box += '<a class="btn btn-warning" title="' + result[1] + '">' + result[2] + '</a>';
+      } else {
+        box += '<a class="btn btn-default">' + value + '</a>';
+      }
+    });
+    box += "</div>";
+    $("#question-edit").html(box).fadeIn(200).tooltip();
+
+    // Dummy implementation just removing all links
+    /*
+    data.caption = data.caption.replace(re, "{replace me caption}");
+    for (var i in data.answers) {
+      data.answers[i] = data.answers[i].replace(re, "{replace me answers}");
+      console.log("Replacing answer: " + data.answers[i]);
+    }
+    data.answers.forEach(function (item) {
+      console.log("Replaced answer: " + item);
+    });
+    callback(data);
+    */
   }
 
 }( jQuery ));
