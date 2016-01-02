@@ -14,32 +14,43 @@
   }
 
   function loadPlayers(teamId) {
+
+    $("#players-composition").prop("selectedIndex", 0);
+
     $.ajax({
       url: "rest/teams/" + teamId + "/players/any",
       async: true,
       dataType: 'json',
       success: function (msg) {
         players = msg;
-        var $list = $("<ul>");
 
-        // Build the list of players
-        players.forEach(function(player) {
-          $item = $("<li>");
-          $item.append(makePlayer(player));
-          $list.append($item);
-        });
-        $('#players-list').append($list);
-        $("#players-list").droppable({
-          accept: "#players-layout div",
-          drop: function(event, ui) {
-            var id = ui.draggable.attr('id');
-            $("#players-layout").find("#" + id).parent().empty().droppable("enable");
-            $("#players-list").find("#" + id).attr("style", "position: relative").show();
-          }
-        });
+        updatePlayers();
         $("#players-composition").change(updateComposition);
       }
     })
+  }
+
+  function updatePlayers() {
+				var $container = $('#players-list');
+    $container.empty();
+    $("#players-layout").empty();
+
+    var $list = $("<ul>");
+    // Build the list of players
+    players.forEach(function(player) {
+      $item = $("<li>");
+      $item.append(makePlayer(player));
+      $list.append($item);
+    });
+    $container.append($list);
+    $container.droppable({
+      accept: "#players-layout div",
+      drop: function(event, ui) {
+        var id = ui.draggable.attr('id');
+        $("#players-layout").find("#" + id).parent().empty().droppable("enable");
+        $container.find("#" + id).attr("style", "position: relative").show();
+      }
+    });
   }
 
   function updateComposition(e) {
@@ -53,6 +64,7 @@
     var height = field.height() / rows.length;
 
     console.log("compositions changed to " + composition);
+    updatePlayers();
 
     rows.forEach(function(value, index) {
       var y = height * index + height/2 -15;
