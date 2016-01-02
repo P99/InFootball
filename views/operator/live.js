@@ -28,7 +28,7 @@ $( function() {
 
   var op3 = $.players({});
 
-  // Operator 3 - Fake replacing metadata
+  // Operator 3 - Actually replacing metadata
   game.on('edit', function (data) {
     console.log("EDIT: " + JSON.stringify(data));
     data = op3.edit(data, function(data) {

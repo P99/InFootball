@@ -78,8 +78,8 @@
     });
   }
 
+  // Search player data from local cache
   function findPlayer(id) {
-      // Search player data from local cache
       var player;
       var result = $.grep(players, function(item) { return item._id == id; });
       if (result.length == 1) {
@@ -88,6 +88,7 @@
       return player;
   }
 
+  // Build a draggable object from player data
   function makePlayer(player) {
     var $obj;
     if (typeof player == "string") {
@@ -98,31 +99,41 @@
         revert: "invalid"
       }).click(function() {
         if ($(this).is('.ui-draggable-dragging')) {
+          // Ignore click to start a drag and drop event
           return;
         }
-        var $edit = $("#question-edit").find(".btn-warning");
-        if ($edit.length) {
+        var $metadata = $("#question-edit").find(".label-warning");
+        var $edit = $metadata.first();
+        var index = $edit.parent().index();
+        if (index >= 0) {
           var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
           var id = $(this).attr('id');
           var player = findPlayer(id);
-          console.log("Clicked: " + player.name);
-          for (var i in question.answers) {
-            question.answers[i] = question.answers[i].replace(re, player.name);
-            break;
+          if (index == 0) {
+            question.caption = question.caption.replace(re, player.name);
+          } else {
+            index--; // Because the first childnode is the question title
+            question.answers[index] = question.answers[index].replace(re, player.name);
           }
-          // Add visual feedback here
           $edit.text(player.name);
-          $edit.switchClass("btn-warning", "btn-success");
-          $("#question-edit").fadeOut(1000);
+          $edit.switchClass("label-warning", "label-success");
+
           // Notify
-          if (typeof editedCallback == "function") {
+          if ((typeof editedCallback == "function")
+            && ($metadata.length == 1)) {
             console.log("Edit send notify");
             editedCallback(question);
+            $("#question-edit").fadeOut(700);
           }
         }
       });
     }
     return $obj;
+  }
+
+  function replaceMetadata(str) {
+    var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
+    return str.replace(re, '<span class="label label-warning" title="$1">$2</span>');
   }
 
   function editQuestion(data, callback) {
@@ -131,16 +142,10 @@
     editedCallback = callback;
 
     // Display
-    var re = new RegExp(/<a class="metadata-link" href="((?:\\.|[^"\\])*)">([^<]*)<\/a>/g);
     var box = '<div id="' + data._id + '"class="alert alert-warning fade in">';
-    box += '<h4>' + data.caption + '</h4>';
+    box += '<h4>' + replaceMetadata(data.caption) + '</h4>';
     data.answers.forEach(function(value) {
-      var result = re.exec(value);
-      if (result) {
-        box += '<a class="btn btn-warning" title="' + result[1] + '">' + result[2] + '</a>';
-      } else {
-        box += '<a class="btn btn-default">' + value + '</a>';
-      }
+      box += '<a class="btn btn-default">' + replaceMetadata(value) + '</a>';
     });
     box += "</div>";
     $("#question-edit").html(box).fadeIn(200).tooltip();
