@@ -28,6 +28,10 @@ $( function() {
 
   var op3 = $.players({});
 
+  var op1 = $.questions({
+    ref: $( "#questions-selection2" )
+  });
+
   // Operator 3 - Actually replacing metadata
   game.on('edit', function (data) {
     console.log("EDIT: " + JSON.stringify(data));
@@ -133,7 +137,6 @@ $( function() {
                 async: true,
                 dataType: 'json',
                 success: function (result) {
-                  console.log("TEMPLATE: " + JSON.stringify(result));
                   game.data = result;
                   $( "#game-toolbar" ).append('div').html("Match "
                     + game.data.title + ", "
@@ -142,6 +145,7 @@ $( function() {
 
                   // Todo: Make sure we can choose the other team as well?
                   op3.load(game.data.templates.teams[0]._id);
+                  op1.init(game.data.templates.questions);
 
                   $( "#game-toolbar" ).append($('<button />').button({
                     label: "Quitter"
