@@ -14,6 +14,7 @@
 
   function interface() {
     this.init = init;
+    this.close = close;
   }
 
   function init(list) {
@@ -29,6 +30,10 @@
         buildContextArray(msg);
       }
     });
+  }
+
+  function close() {
+    $anchor.tabs( "destroy" );
   }
 
   function buildContextArray(list) {
@@ -59,7 +64,6 @@
   }
 
   function buildGrid() {
-    $anchor.empty();
     var $tabs = $('<ul>');
     var $content = $('<div>');
     $.each(sorted, function(context) {
@@ -78,6 +82,8 @@
       $content.append($context);
       $context.tabs();
     });
+
+    $anchor.empty();
     $anchor.append($tabs);
     $anchor.append($content);
 				$anchor.tabs();

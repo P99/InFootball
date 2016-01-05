@@ -152,6 +152,7 @@ $( function() {
                   }).click(function() {
                     game.leave();
 
+                    op1.close();
                     questions.ref.hide();
                     $( "#tabs-live" ).hide();
                     $( "#game-toolbar" ).empty();
