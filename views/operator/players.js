@@ -128,7 +128,7 @@
             question.answers[index] = question.answers[index].replace(re, player.name);
           }
           $edit.text(player.name);
-          $edit.switchClass("label-warning", "label-success");
+          $edit.removeClass("label-warning").addClass("label-success");
 
           // Notify
           if ((typeof editedCallback == "function")
