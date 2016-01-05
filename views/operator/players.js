@@ -11,6 +11,7 @@
   function interface() {
     this.load = loadPlayers;
     this.edit = editQuestion;
+    this.cancel = cancelQuestion;
   }
 
   function loadPlayers(teamId) {
@@ -150,6 +151,7 @@
 
   function editQuestion(data, callback) {
     // Save current question
+    // Todo: Stack the questions in a list if op3 not fast enougth
     question = data;
     editedCallback = callback;
 
@@ -174,6 +176,13 @@
     });
     callback(data);
     */
+  }
+
+  function cancelQuestion(data) {
+    if (data && question && (data._id == question._id)) {
+      question = undefined;
+      $("#question-edit").empty();
+    }
   }
 
 }( jQuery ));

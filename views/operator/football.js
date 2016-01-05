@@ -62,6 +62,9 @@
       case "SENT":
         notify("sent", msg.data);
         break;
+      case "CLOSE":
+        notify("close", msg.data);
+        break;
       default:
         console.log("Un-handled action: " + msg.action);
     }

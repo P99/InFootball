@@ -62,9 +62,11 @@ function operatorHandler(io, socket, msg) {
       break;
     case "ANSWER":
       question.status = "validated";
+      io.of('operator').to(room).emit('football', { action: "CLOSE", data: question });
       break;
     case "CANCEL":
       question.status = "cancelled";
+      io.of('operator').to(room).emit('football', { action: "CLOSE", data: question });
       break;
     default:
       console.log("Un-handled action: " + msg.action);

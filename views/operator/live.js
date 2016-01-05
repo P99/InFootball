@@ -65,8 +65,14 @@ $( function() {
       event.preventDefault();
     });
     $("#questions-answers").append($box);
+    op3.cancel(data);
   });
-  $(document)
+
+  // Synchronize concurent actions of various operators
+  game.on('close', function (data) {
+    var $box = $("#" + data._id).hide();
+    op3.cancel(data);
+  });
 
   // Load async options for template field
   templates.emit("READ").done(function(data) {
