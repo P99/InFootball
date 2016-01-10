@@ -7,6 +7,8 @@
   var sorted = {};
   var $anchor;
   var callback;
+  var currentContext;
+  var currentSubcontext;
 
   $.operator1 = function(options) {
     $anchor = options.ref;
@@ -43,9 +45,12 @@
   function draw(data) {
     $anchor.empty();
     buildContextArray(data);
+    nextQuestion();
     $anchor.show();
   }
 
+  // Sort questions by context / subcontext
+  // so we can access them quickly
   function buildContextArray(list) {
     var head;
     list.forEach(function(item) {
@@ -73,15 +78,18 @@
     buildGrid();
   }
 
+  // Build the UI, by defaults all questions are hidden
   function buildGrid() {
     var $tabs = $('<ul>');
     var $content = $('<div>');
     $.each(sorted, function(context) {
+      currentContext = (currentContext || context);
       $tabs.append('<li><a href="#context-'+ context + '">' + lookup[context].title + '</a></li>');
       var $context = $('<div id="context-' + context + '">');
       var $subtabs = $('<ul>');
       var $subcontent = $('<div>');
       $.each(sorted[context], function(subcontext) {
+        currentSubcontext = (currentSubcontext || subcontext);
         $subtabs.append('<li><a href="#subcontext-' + subcontext + '">' + lookup[subcontext].title + '</a></li>');
         var $subcontext = $('<div id="subcontext-' + subcontext + '">');
         $subcontext.append( buildQuestionList(context, subcontext) );
@@ -90,12 +98,22 @@
       $context.append($subtabs);
       $context.append($subcontent);
       $content.append($context);
-      $context.tabs();
+      $context.tabs({
+        activate: function( event, ui ) {
+          currentSubcontext = ui.newPanel.attr('id').slice(11); // 'subcontext-' length
+          nextQuestion();
+        }
+      });
     });
 
     $anchor.append($tabs);
     $anchor.append($content);
-				$anchor.tabs();
+				$anchor.tabs({
+      activate: function( event, ui ) {
+        currentContext = ui.newPanel.attr('id').slice(8); // 'context-' length
+        nextQuestion();
+      }
+    });
   }
   
   function buildQuestionList(context, subcontext) {
@@ -104,24 +122,47 @@
     $.each(questions, function(index) {
       var question = questions[index];
       var $node = $('<div class="alert alert-warning">');
-      $node.attr('id', question._id);
+      $node.attr('id', 'op1-' + question._id);
       $node.append( $('<h4>').append(question.caption) );
       $.each(question.answers, function(key) {
         $node.append($('<a class="btn btn-default">').append(question.answers[key]));
       });
-      var $button = $('<button style="float:right" />');
-      $button.button({ 
+
+      var $actions = $('<div style="float:right" />');
+
+      $('<button />')
+      .button({ 
+        icons: { primary: "ui-icon-refresh" },
+        label: "Passer"
+      }).click(function() {
+        nextQuestion();
+      })
+      .appendTo($actions);
+
+      $('<button  />')
+      .button({ 
         icons: { secondary: "ui-icon-triangle-1-e" },
         label: "Envoyer"
       }).click(function() {
         if (typeof callback == "function") {
           callback(question);
         }
-      });
-      $node.append($button);
+      })
+      .appendTo($actions);
+
+      $node.append($actions).hide();
       $list.append($node);
     });
     return $list;
+  }
+
+  // Select next question
+  function nextQuestion() {
+    var list = sorted[currentContext][currentSubcontext];
+    if (list && list.length) {
+      var index = Math.floor(Math.random() * list.length);
+      $('#op1-' + list[index]._id ).show();
+    }
   }
 
 }( jQuery ));

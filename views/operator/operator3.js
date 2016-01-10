@@ -156,26 +156,13 @@
     editedCallback = callback;
 
     // Display
-    var box = '<div id="' + data._id + '"class="alert alert-warning fade in">';
+    var box = '<div id="op3-' + data._id + '"class="alert alert-warning fade in">';
     box += '<h4>' + replaceMetadata(data.caption) + '</h4>';
     data.answers.forEach(function(value) {
       box += '<a class="btn btn-default">' + replaceMetadata(value) + '</a>';
     });
     box += "</div>";
     $("#question-edit").html(box).fadeIn(200).tooltip();
-
-    // Dummy implementation just removing all links
-    /*
-    data.caption = data.caption.replace(re, "{replace me caption}");
-    for (var i in data.answers) {
-      data.answers[i] = data.answers[i].replace(re, "{replace me answers}");
-      console.log("Replacing answer: " + data.answers[i]);
-    }
-    data.answers.forEach(function (item) {
-      console.log("Replaced answer: " + item);
-    });
-    callback(data);
-    */
   }
 
   function cancelQuestion(data) {
