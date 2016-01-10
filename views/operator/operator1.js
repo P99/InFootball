@@ -68,6 +68,7 @@
     });
 
     questions.forEach(function(item) {
+      item.scoring = 0;
       if (item.context && item.subcontext) {
         sorted[item.context][item.subcontext].push(item);
       } else {
@@ -147,6 +148,7 @@
         if (typeof callback == "function") {
           callback(question);
         }
+        nextQuestion();
       })
       .appendTo($actions);
 
@@ -160,8 +162,19 @@
   function nextQuestion() {
     var list = sorted[currentContext][currentSubcontext];
     if (list && list.length) {
-      var index = Math.floor(Math.random() * list.length);
-      $('#op1-' + list[index]._id ).show();
+      var max = 0;
+      var select = 0;
+      $.each(list, function(index) {
+        $('#op1-' + list[index]._id ).hide();
+        if (list[index].scoring > max) {
+          max = list[index].scoring;
+          select = index;
+        } else {
+          list[index].scoring++;
+        }
+      });
+      list[select].scoring = 0;
+      $('#op1-' + list[select]._id ).show();
     }
   }
 
