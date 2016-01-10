@@ -19,55 +19,47 @@ $( function() {
     namespace: "operator"
   });
 
-  var op3 = $.players({});
-
-  var op1 = $.questions({
+  var op1 = $.operator1({
     ref: $( "#questions-selection2" ),
     send: function(data) {
       game.send(data);
     }
   });
 
+  var op2 = $.operator2({
+    ref: $("#questions-answers")
+  });
+
+  var op3 = $.operator3({
+  });
+
   // Operator 3 - Actually replacing metadata
-  game.on('edit', function (data) {
-    console.log("EDIT: " + JSON.stringify(data));
-    data = op3.edit(data, function(data) {
-      game.send(data);
+  game.on('edit', function (input) {
+    console.log("EDIT: " + JSON.stringify(input));
+    op3.edit(input, function(output) {
+      game.send(output);
     });
   });
 
   // Operator 2 - Answering questions
-  game.on('sent', function (data) {
-    console.log("Receiving new question");
-    var box = '<div id="' + data._id + '"class="alert alert-warning fade in">';
-    box += '<a class="close">x</a>';
-    box += '<h4>' + data.caption + '</h4>';
-    //box += '<p>';
-    data.answers.forEach(function(value) {
-      box += '<a class="btn btn-default">' + value + '</a>';
+  game.on('sent', function (input) {
+    op3.cancel(input);
+    op2.answer(input, function(status, output) {
+      switch(status) {
+      case "select":
+        game.select(output);
+        break;
+      case "cancel":
+        game.cancel(output);
+        break;
+      }
     });
-    //box += '</p>';
-    box += "</div>";
-    var $box = $(box);
-    $box.find(".btn").on('click', function(event) {
-      data.validation = event.currentTarget.text;
-      game.select(data);
-      $(this).parent().hide();
-      event.preventDefault();
-    });
-    $box.find(".close").on('click', function(event) {
-      game.cancel(data);
-      $(this).parent().hide();
-      event.preventDefault();
-    });
-    $("#questions-answers").append($box);
-    op3.cancel(data);
   });
 
   // Synchronize concurent actions of various operators
-  game.on('close', function (data) {
-    var $box = $("#" + data._id).hide();
-    op3.cancel(data);
+  game.on('close', function (input) {
+    op2.cancel(input);
+    op3.cancel(input);
   });
 
   // Load async options for template field

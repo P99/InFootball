@@ -4,7 +4,7 @@
   var question;
   var editedCallback;
 
-  $.players = function(options) {
+  $.operator3 = function(options) {
     return new interface();
   };
 

@@ -6,11 +6,11 @@
   var lookup = {};
   var sorted = {};
   var $anchor;
-  var sendCallback;
+  var callback;
 
-  $.questions = function(options) {
+  $.operator1 = function(options) {
     $anchor = options.ref;
-    sendCallback = options.send;
+    callback = options.send;
     return new interface();
   };
 
@@ -114,8 +114,8 @@
         icons: { secondary: "ui-icon-triangle-1-e" },
         label: "Envoyer"
       }).click(function() {
-        if (typeof sendCallback == "function") {
-          sendCallback(question);
+        if (typeof callback == "function") {
+          callback(question);
         }
       });
       $node.append($button);
