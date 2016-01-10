@@ -6,9 +6,11 @@
   var lookup = {};
   var sorted = {};
   var $anchor;
+  var sendCallback;
 
   $.questions = function(options) {
     $anchor = options.ref;
+    sendCallback = options.send;
     return new interface();
   };
 
@@ -27,13 +29,21 @@
       dataType: 'json',
       success: function (msg) {
         contexts = msg;
-        buildContextArray(msg);
+        draw(msg);
       }
     });
   }
 
   function close() {
+    $anchor.hide();
     $anchor.tabs( "destroy" );
+    $anchor.empty();
+  }
+
+  function draw(data) {
+    $anchor.empty();
+    buildContextArray(data);
+    $anchor.show();
   }
 
   function buildContextArray(list) {
@@ -83,7 +93,6 @@
       $context.tabs();
     });
 
-    $anchor.empty();
     $anchor.append($tabs);
     $anchor.append($content);
 				$anchor.tabs();
@@ -100,6 +109,16 @@
       $.each(question.answers, function(key) {
         $node.append($('<a class="btn btn-default">').append(question.answers[key]));
       });
+      var $button = $('<button style="float:right" />');
+      $button.button({ 
+        icons: { secondary: "ui-icon-triangle-1-e" },
+        label: "Envoyer"
+      }).click(function() {
+        if (typeof sendCallback == "function") {
+          sendCallback(question);
+        }
+      });
+      $node.append($button);
       $list.append($node);
     });
     return $list;

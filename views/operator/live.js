@@ -15,13 +15,6 @@ $( function() {
     type: "options"
   });
 
-  var questions = $.rest({
-    model: "questions",
-    namespace: "operator",
-    ref: $( "#questions-selection" ),
-    type: "jtable"
-  });
-
   var game = $.football({
     namespace: "operator"
   });
@@ -29,7 +22,10 @@ $( function() {
   var op3 = $.players({});
 
   var op1 = $.questions({
-    ref: $( "#questions-selection2" )
+    ref: $( "#questions-selection2" ),
+    send: function(data) {
+      game.send(data);
+    }
   });
 
   // Operator 3 - Actually replacing metadata
@@ -159,7 +155,6 @@ $( function() {
                     game.leave();
 
                     op1.close();
-                    questions.ref.hide();
                     $( "#tabs-live" ).hide();
                     $( "#game-toolbar" ).empty();
                     games.ref.show();
@@ -168,11 +163,7 @@ $( function() {
                 }
               });
 
-              questions.root = "templates/" + data.record.templates + "/";
-              questions.ref.jtable('load');
-
               games.ref.hide();
-              questions.ref.show();
             });
             return $button;
           }
@@ -182,41 +173,6 @@ $( function() {
 
     games.ref.jtable("load", {});
   }); // End loading templates option
-  
-  questions.ref.jtable({
-      title: "Sélection des questions",
-      jqueryuiTheme: true,
-      selecting: true,
-      actions: {
-        listAction: function(postData, options) {
-          console.log("list actions questions");
-          return questions.emit("READ");
-        }
-      },
-      fields: {
-        _id: {
-          key: true,
-          list: false
-        },
-        caption: {
-          title: "Intitulé",
-          width: "70%"
-        },
-        action: {
-          title: "",
-          display: function (data) {
-            var $button = $('<button />');
-            $button.button({ 
-              icons: { secondary: "ui-icon-triangle-1-e" },
-              label: "Envoyer"
-            }).click(function() {
-              game.send(data.record);
-            });
-            return $button;
-          }
-        }
-      }
-  }).hide();
 
   $( "#tabs-live" ).tabs().hide();
 
