@@ -44,15 +44,12 @@ $( function() {
   // Operator 2 - Answering questions
   game.on('sent', function (input) {
     op3.cancel(input);
-    op2.answer(input, function(status, output) {
-      switch(status) {
-      case "select":
-        game.select(output);
-        break;
-      case "cancel":
-        game.cancel(output);
-        break;
-      }
+    op2.answer(input)
+    .done(function (output) {
+      game.select(output);
+    })
+    .fail(function (output) {
+      game.cancel(output);
     });
   });
 

@@ -12,8 +12,9 @@
     this.cancel = cancel;
   }
 
-  function answer(data, callback) {
+  function answer(data) {
     console.log("Receiving new question");
+    var promise = $.Deferred();
     var box = '<div id="' + data._id + '"class="alert alert-warning fade in">';
     box += '<a class="close">x</a>';
     box += '<h4>' + data.caption + '</h4>';
@@ -24,16 +25,17 @@
     var $box = $(box);
     $box.find(".btn").on('click', function(event) {
       data.validation = event.currentTarget.text;
-      callback("select", data);
+      promise.resolve(data);
       $(this).parent().hide();
       event.preventDefault();
     });
     $box.find(".close").on('click', function(event) {
-      callback("cancel", data);
+      promise.reject(data);
       $(this).parent().hide();
       event.preventDefault();
     });
     $anchor.append($box);
+    return promise;
   }
 
   function cancel(data) {
