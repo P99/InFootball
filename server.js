@@ -6,10 +6,10 @@ var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var mongoose     = require('mongoose');
-var dbConfig     = require('./db');
+var config     = require('./config');
 
 // Connect to DB
-mongoose.connect(dbConfig.url);
+mongoose.connect(config.mongodb);
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 var passport = require('passport');
 var expressSession = require('express-session');
 // TODO - Why Do we need this key ?
-app.use(expressSession({secret: 'mySecretKey'}));
+app.use(expressSession({secret: config.secret}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -64,11 +64,11 @@ if (app.get('env') === 'development') {
 }
 
 var webServer = http.Server(app);
-webServer.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080,
-                 process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
+webServer.listen(config.port,
+                 config.host,
                  function() {
                     console.log('%s: Node server started on %s:%d ...',
-                    Date(Date.now() ), (process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'), (process.env.OPENSHIFT_NODEJS_PORT || 8080));
+                    Date(Date.now() ), config.host, config.port);
                  }
 );
 

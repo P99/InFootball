@@ -5,7 +5,7 @@ Players receive questions related to the ongoing actions
 They have a choice with a limited set of answers
 Players can compete with friends with a special scoring system
 
-[QuickStart](#Installation): Step-by-step instructions to get InFootball running on your computer
+[QuickStart](/w/gettingstarted/#installation): Step-by-step instructions to get InFootball running on your computer
 
 # High level view
 

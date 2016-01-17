@@ -1,4 +1,5 @@
 var jwt = require('jsonwebtoken');
+var config = require('../config');
 var User = require('../models/user');
 
 
@@ -20,7 +21,7 @@ function authenticate(namespace) {
     }
 
     // Checking token signature + if expired
-    jwt.verify(token, 'c27002abbec4e54d7c33b9740675a069', {}, function(err, decoded) {
+    jwt.verify(token, config.secret, {}, function(err, decoded) {
       if (err) {
         return accept(new Error("unauthorized"));
       }
@@ -50,7 +51,7 @@ function authenticate(namespace) {
 }
 
 function sign(data) {
-  return jwt.sign( data, 'c27002abbec4e54d7c33b9740675a069', { expiresInSeconds: 5 });
+  return jwt.sign( data, config.secret, { expiresInSeconds: 5 });
 }
 
 exports.authenticate = authenticate;
