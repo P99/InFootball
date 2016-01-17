@@ -3,9 +3,8 @@ var mongoose = require('mongoose');
 var Q = require('q');
 
 /* This file duplicates the code from rest.js */
-/* It does exactly the same thing, 
-/* was simply adapted to handle HTTP requests */
-/* Todo: Merge back the two files + restore security  */
+/* It was simply adapted to handle HTTP requests */
+/* Todo: Merge back the two files  */
 
 module.exports = function(req, res, next) {
 
@@ -14,20 +13,16 @@ module.exports = function(req, res, next) {
           var pair = pairs.pop();
           var model = mongoose.models[pair.model];
 
-          /*
-          // Security check namespace
-          if (!mongoose.models[pair.model]) {
-            console.log("Un-handled model: " + pair.model);
-            return;
-          }
-          if (mongoose.models[pair.model].namespace() != namespace) {
-            console.log("Model " + pair.model + " does not belong to namespace " + namespace);
-            return;
-          }
-          */
-
           msg.status = "ERROR"; // Defaults to error
           console.log("[" + pair.model + "] " + msg.method + " " + msg.uri);
+
+          // Security check namespace
+          if ((mongoose.models[pair.model].namespace() != "operator")
+            || (["operator", "admin"].indexOf(req.user.type.toLowerCase()) < 0)) {
+            console.log("Security error");
+            reply(msg);
+            return;
+          }
   
           switch (msg.method) {
           case "GET":
