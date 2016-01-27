@@ -6,13 +6,16 @@
   var lookup = {};
   var sorted = {};
   var $anchor;
-  var callback;
+  var sendCallback;
+  var contextCallback;
   var currentContext;
   var currentSubcontext;
+  var selection = {};
 
   $.operator1 = function(options) {
     $anchor = options.ref;
-    callback = options.send;
+    sendCallback = options.send;
+    contextCallback = options.context;
     return new interface();
   };
 
@@ -91,6 +94,7 @@
       var $subcontent = $('<div>');
       $.each(sorted[context], function(subcontext) {
         currentSubcontext = (currentSubcontext || subcontext);
+        selection[context] = (selection[context] || subcontext);
         $subtabs.append('<li><a href="#subcontext-' + subcontext + '">' + lookup[subcontext].title + '</a></li>');
         var $subcontext = $('<div id="subcontext-' + subcontext + '">');
         $subcontext.append( buildQuestionList(context, subcontext) );
@@ -102,6 +106,7 @@
       $context.tabs({
         activate: function( event, ui ) {
           currentSubcontext = ui.newPanel.attr('id').slice(11); // 'subcontext-' length
+          selection[currentContext] = currentSubcontext;
           nextQuestion();
         }
       });
@@ -112,6 +117,7 @@
 				$anchor.tabs({
       activate: function( event, ui ) {
         currentContext = ui.newPanel.attr('id').slice(8); // 'context-' length
+        currentSubcontext = selection[currentContext];
         nextQuestion();
       }
     });
@@ -145,8 +151,8 @@
         icons: { secondary: "ui-icon-triangle-1-e" },
         label: "Envoyer"
       }).click(function() {
-        if (typeof callback == "function") {
-          callback(question);
+        if (typeof sendCallback == "function") {
+          sendCallback(question);
         }
         nextQuestion();
       })
@@ -161,6 +167,12 @@
   // Select next question
   function nextQuestion() {
     var list = sorted[currentContext][currentSubcontext];
+    if (typeof contextCallback == "function") {
+       var str = lookup[currentContext].title;
+       str += " / ";
+       str += lookup[currentSubcontext].title;
+       contextCallback(str);
+    }
     if (list && list.length) {
       var max = 0;
       var select = 0;

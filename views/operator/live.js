@@ -23,6 +23,9 @@ $( function() {
     ref: $( "#questions-selection2" ),
     send: function(data) {
       game.send(data);
+    },
+    context: function(data) {
+      game.context(data);
     }
   });
 
@@ -39,6 +42,9 @@ $( function() {
     op3.edit(input, function(output) {
       game.send(output);
     });
+  });
+  game.on('context', function (input) {
+    op3.context(input);
   });
 
   // Operator 2 - Answering questions

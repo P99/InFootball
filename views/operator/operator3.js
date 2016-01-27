@@ -12,6 +12,7 @@
     this.load = loadPlayers;
     this.edit = editQuestion;
     this.cancel = cancelQuestion;
+    this.context = showContext;
   }
 
   function loadPlayers(teamId) {
@@ -170,6 +171,10 @@
       question = undefined;
       $("#question-edit").empty();
     }
+  }
+
+  function showContext(str) {
+    $("#question-context").html(str);
   }
 
 }( jQuery ));

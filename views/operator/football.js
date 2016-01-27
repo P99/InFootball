@@ -28,6 +28,10 @@
       socket.emit('football', { action: "SEND", uri: game, data: question });
     };
 
+    this.context = function(str) {
+      socket.emit('football', { action: "CONTEXT", uri: game, data: str });
+    };
+
     this.cancel = function(question) {
       socket.emit('football', { action: "CANCEL", uri: game, data: question });
     };
@@ -64,6 +68,9 @@
         break;
       case "CLOSE":
         notify("close", msg.data);
+        break;
+      case "CONTEXT":
+        notify("context", msg.data);
         break;
       default:
         console.log("Un-handled action: " + msg.action);
