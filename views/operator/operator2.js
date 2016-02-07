@@ -27,11 +27,13 @@
             data.validation = event.currentTarget.text;
             promise.resolve(data);
             $(this).parent().hide();
+            ion.sound.play("goodresponse");
             event.preventDefault();
         });
         $box.find(".close").on('click', function(event) {
             promise.reject(data);
             $(this).parent().hide();
+            ion.sound.play("badresponse");
             event.preventDefault();
         });
         $anchor.append($box);
