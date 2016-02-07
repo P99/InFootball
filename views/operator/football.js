@@ -1,80 +1,105 @@
-(function ( $ ) {
+(function($) {
 
-  // Data shared by all rest instances
-  var namespace;
-  var socket;
-  var game;
-  var listeners = [];
+    // Data shared by all rest instances
+    var namespace;
+    var socket;
+    var game;
+    var listeners = [];
 
-  // Public interface
-  $.football = function(options) {
-    namespace = options.namespace,
-    socket = $.socket(options.namespace)
-    return new clientInterface();
-  }
-
-  // Client interface
-  function clientInterface() {
-    this.join = function(gameId) {
-      socket.emit('football', { action: "JOIN", uri: gameId });
-      game = gameId;
-    };
-
-    this.leave = function() {
-      socket.emit('football', { action: "LEAVE", uri: game });
-    };
-
-    this.send = function(question) {
-      socket.emit('football', { action: "SEND", uri: game, data: question });
-    };
-
-    this.context = function(str) {
-      socket.emit('football', { action: "CONTEXT", uri: game, data: str });
-    };
-
-    this.cancel = function(question) {
-      socket.emit('football', { action: "CANCEL", uri: game, data: question });
-    };
-
-    this.select = function(question) {
-      socket.emit('football', { action: "ANSWER", uri: game, data: question });
-    };
-
-    this.on = function(event, callback) {
-      if (typeof callback == "function") {
-        listeners.push({ event: event, callback: callback });
-      }
+    // Public interface
+    $.football = function(options) {
+        namespace = options.namespace,
+            socket = $.socket(options.namespace)
+        return new clientInterface();
     }
-  }
 
-  function notify(event, data) {
-    listeners.forEach(function(item) {
-      if (item.event == event) {
-         item.callback(data);
-      }
-    });
-  }
+    // Client interface
+    function clientInterface() {
+        this.join = function(gameId) {
+            socket.emit('football', {
+                action: "JOIN",
+                uri: gameId
+            });
+            game = gameId;
+        };
 
-  $.football.handler = function(msg) {
-    switch (msg.action) {
-      case "MATCH":
-        console.log("Received MATCH data: " + JSON.stringify(msg.data));
-        break;
-      case "EDIT":
-        notify("edit", msg.data);
-        break;
-      case "SENT":
-        notify("sent", msg.data);
-        break;
-      case "CLOSE":
-        notify("close", msg.data);
-        break;
-      case "CONTEXT":
-        notify("context", msg.data);
-        break;
-      default:
-        console.log("Un-handled action: " + msg.action);
+        this.leave = function() {
+            socket.emit('football', {
+                action: "LEAVE",
+                uri: game
+            });
+        };
+
+        this.send = function(question) {
+            socket.emit('football', {
+                action: "SEND",
+                uri: game,
+                data: question
+            });
+        };
+
+        this.context = function(str) {
+            socket.emit('football', {
+                action: "CONTEXT",
+                uri: game,
+                data: str
+            });
+        };
+
+        this.cancel = function(question) {
+            socket.emit('football', {
+                action: "CANCEL",
+                uri: game,
+                data: question
+            });
+        };
+
+        this.select = function(question) {
+            socket.emit('football', {
+                action: "ANSWER",
+                uri: game,
+                data: question
+            });
+        };
+
+        this.on = function(event, callback) {
+            if (typeof callback == "function") {
+                listeners.push({
+                    event: event,
+                    callback: callback
+                });
+            }
+        }
     }
-  }
 
-}( jQuery ));
+    function notify(event, data) {
+        listeners.forEach(function(item) {
+            if (item.event == event) {
+                item.callback(data);
+            }
+        });
+    }
+
+    $.football.handler = function(msg) {
+        switch (msg.action) {
+            case "MATCH":
+                console.log("Received MATCH data: " + JSON.stringify(msg.data));
+                break;
+            case "EDIT":
+                notify("edit", msg.data);
+                break;
+            case "SENT":
+                notify("sent", msg.data);
+                break;
+            case "CLOSE":
+                notify("close", msg.data);
+                break;
+            case "CONTEXT":
+                notify("context", msg.data);
+                break;
+            default:
+                console.log("Un-handled action: " + msg.action);
+        }
+    }
+
+}(jQuery));

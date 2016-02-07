@@ -1,12 +1,12 @@
-var express      = require('express');
-var http         = require('http');
-var path         = require('path');
-var favicon      = require('static-favicon');
-var logger       = require('morgan');
+var express = require('express');
+var http = require('http');
+var path = require('path');
+var favicon = require('static-favicon');
+var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser   = require('body-parser');
-var mongoose     = require('mongoose');
-var config     = require('./config');
+var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
+var config = require('./config');
 
 // Connect to DB
 mongoose.connect(config.mongodb);
@@ -28,12 +28,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 var passport = require('passport');
 var expressSession = require('express-session');
 // TODO - Why Do we need this key ?
-app.use(expressSession({secret: config.secret}));
+app.use(expressSession({
+    secret: config.secret
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
- // Using the flash middleware provided by connect-flash to store messages in session
- // and displaying in templates
+// Using the flash middleware provided by connect-flash to store messages in session
+// and displaying in templates
 var flash = require('connect-flash');
 app.use(flash());
 
@@ -65,11 +67,11 @@ if (app.get('env') === 'development') {
 
 var webServer = http.Server(app);
 webServer.listen(config.port,
-                 config.host,
-                 function() {
-                    console.log('%s: Node server started on %s:%d ...',
-                    Date(Date.now() ), config.host, config.port);
-                 }
+    config.host,
+    function() {
+        console.log('%s: Node server started on %s:%d ...',
+            Date(Date.now()), config.host, config.port);
+    }
 );
 
 // Mongoose models need to be created first
